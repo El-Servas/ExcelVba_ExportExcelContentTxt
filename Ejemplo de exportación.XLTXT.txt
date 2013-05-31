@@ -1,0 +1,218 @@
+Representación Textual del archivo de Excel: "Ejemplo de exportación.xls"
+
+Hojas:
+1. [Sheet1]
+2. [Sheet2]
+3. [Sheet3]
+
+Contenido:
+[Sheet1]
+1. [A1] \Id\
+2. [B1] \Desc\
+3. [A2] \1\
+4. [B2] \Abc\
+5. [A3] \=A2+1\
+6. [B3] \Bcd\
+7. [A4] \=A3+1\
+8. [B4] \Cde\
+
+[Sheet2]
+
+[Sheet3]
+1. [B2] \Mas\
+2. [C3] \O\
+3. [D4] \Menos\
+
+Nombres:
+1. [Desc] =Sheet1!$B:$B
+2. [Ids] =Sheet1!$A$1:$A$4
+3. [Sheet3!Mas] =Sheet3!$B$2:$D$4
+
+Módulos VBA:
+1. [ThisWorkbook] Tipo: 100
+2. [Sheet1] Tipo: 100
+3. [Sheet3] Tipo: 100
+4. [Module1] Tipo: 1
+5. [Sheet2] Tipo: 100
+
+Codigo:
+[ThisWorkbook] 6 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
+Inicio
+End Sub
+
+\\\--- END OF MODULE ---
+
+[Sheet1] 2 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+\\\--- END OF MODULE ---
+
+[Sheet3] 2 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+\\\--- END OF MODULE ---
+
+[Module1] 147 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Private Const TOKEN_PRE_EXTENSION = ".XLTXT"
+Private Const TOKEN_EXTENSION = ".txt"
+
+Private Const TOKEN_HEADER = "Representación Textual del archivo de Excel: "
+Private Const TOKEN_HOJAS_TITLE = "Hojas:"
+Private Const TOKEN_CONTENT_TITLE = "Contenido:"
+Private Const TOKEN_NOMBRES_TITLE = "Nombres:"
+Private Const TOKEN_MODULOS_TITLE = "Módulos VBA:"
+Private Const TOKEN_CODIGO_TITLE = "Codigo:"
+Private Const TOKEN_MODULE_BEGINS = "///--- BEGINNING OF MODULE ---"
+Private Const TOKEN_MODULE_END = "\\\--- END OF MODULE ---"
+
+Private FSO As New Scripting.FileSystemObject
+Private Stream As TextStream 'El stream donde vamos a escribir el archivo
+
+Sub Inicio()
+Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
+
+GenEncabezado
+GenHojas
+GenNombres
+GenModulos
+
+Stream.Close
+End Sub
+
+Function GetTXTFileName() As String
+GetTXTFileName = FSO.GetBaseName(ActiveWorkbook.name) & TOKEN_PRE_EXTENSION & TOKEN_EXTENSION
+End Function
+
+Sub GenEncabezado()
+Log TOKEN_HEADER & """" & ActiveWorkbook.name & """"
+Log
+End Sub
+
+Sub GenHojas()
+'--- Lista de hojas
+Log TOKEN_HOJAS_TITLE
+IteraHojas "ImprimeNombreDeHoja"
+Log
+
+'--- Contenido de cada hoja
+Log TOKEN_CONTENT_TITLE
+IteraHojas "ProcesaContenidoDeHoja"
+End Sub
+
+Sub GenNombres()
+Log TOKEN_NOMBRES_TITLE
+IteraNombres "ImprimeNombre"
+Log
+End Sub
+
+Sub GenModulos()
+Log TOKEN_MODULOS_TITLE
+IteraModulos "ImprimeNombreDeModulo"
+Log
+
+Log TOKEN_CODIGO_TITLE
+IteraModulos "ProcesaModulo"
+Log
+End Sub
+
+Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
+    Dim CodeLines As Integer
+    CodeLines = vbcomp.CodeModule.CountOfLines
+    Log "[" & vbcomp.name & "] " & CodeLines & " líneas de código."
+    
+    Log TOKEN_MODULE_BEGINS
+    Log vbcomp.CodeModule.Lines(1, CodeLines)
+    Log TOKEN_MODULE_END
+    
+    Log
+End Sub
+
+Sub ImprimeNombreDeModulo(vbcomp As vbcomponent, iterationIndex As Integer)
+    Log iterationIndex & ". [" & vbcomp.name & "] Tipo: " & vbcomp.Type
+End Sub
+
+Sub IteraModulos(DelegateName As String)
+    Dim vbcomponent As vbcomponent
+    Dim ix As Integer
+    ix = 0
+    For Each vbcomponent In ActiveWorkbook.VBProject.VBComponents
+        ix = ix + 1
+        Application.Run DelegateName, vbcomponent, ix
+    Next
+End Sub
+
+
+Sub ImprimeNombre(name As name, iterationIndex As Integer)
+    Log iterationIndex & ". [" & name.name & "] " & name.RefersTo
+End Sub
+
+Sub IteraNombres(DelegateName As String)
+    Dim name As name
+    Dim ix As Integer
+    ix = 0
+    For Each name In ActiveWorkbook.Names
+        ix = ix + 1
+        Application.Run DelegateName, name, ix
+    Next
+End Sub
+
+Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
+    Log iterationIndex & ". [" & sheet.name & "]"
+End Sub
+
+Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
+    Log "[" & sheet.name & "]"
+    IteraCeldas sheet, "ProcesaCelda"
+    Log
+End Sub
+
+Sub IteraHojas(DelegateName As String)
+    Dim sheet As Worksheet
+    Dim ix As Integer
+    ix = 0
+    For Each sheet In ActiveWorkbook.Worksheets
+        ix = ix + 1
+        Application.Run DelegateName, sheet, ix
+    Next
+End Sub
+
+Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
+    If cell.Formula = "" Then
+        ProcesaCelda = iterationIndex
+        Exit Function
+    End If
+    ProcesaCelda = iterationIndex + 1
+    Log ProcesaCelda & ". [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
+End Function
+
+Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
+    Dim cell As Range
+    Dim ix As Integer
+    ix = 0
+    For Each cell In sheet.UsedRange.Cells
+        ix = Application.Run(DelegateName, cell, ix)
+    Next
+End Sub
+
+Sub Log(Optional Mensaje As String)
+Debug.Print Mensaje
+Stream.WriteLine (Mensaje)
+End Sub
+\\\--- END OF MODULE ---
+
+[Sheet2] 2 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+\\\--- END OF MODULE ---
+
+
