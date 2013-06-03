@@ -1,4 +1,4 @@
-Representación Textual del archivo de Excel: "Ejemplo de exportación.xls"
+Representación Textual del archivo de Excel: "ExportToTxt.xls"
 
 Hojas:
 1. [Sheet1]
