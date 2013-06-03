@@ -2,57 +2,37 @@ Representación Textual del archivo de Excel: "Ejemplo de exportación.xls"
 
 Hojas:
 1. [Sheet1]
-2. [Sheet2]
-3. [Sheet3]
 
 Contenido:
 [Sheet1]
-1. [A1] \Id\
-2. [B1] \Desc\
-3. [A2] \1\
-4. [B2] \Abc\
-5. [A3] \=A2+1\
-6. [B3] \Bcd\
-7. [A4] \=A3+1\
-8. [B4] \Cde\
-
-[Sheet2]
-
-[Sheet3]
-1. [B2] \Mas\
-2. [C3] \O\
-3. [D4] \Menos\
 
 Nombres:
 1. [Desc] =Sheet1!$B:$B
 2. [Ids] =Sheet1!$A$1:$A$4
-3. [Sheet3!Mas] =Sheet3!$B$2:$D$4
 
 Módulos VBA:
 1. [ThisWorkbook] Tipo: 100
 2. [Sheet1] Tipo: 100
-3. [Sheet3] Tipo: 100
-4. [ExportToTxt] Tipo: 1
-5. [Sheet2] Tipo: 100
+3. [ExportToTxt] Tipo: 1
 
 Codigo:
-[ThisWorkbook] 6 líneas de código.
+[ThisWorkbook] 12 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-ExportToTxt.ExportToTxt
+
+    'En caso de que se grabe éste libro, que es el que tiene el código, vamos a llamar directamente a la rutina_
+    ExportToTxt.ExportToTxt
+
+    'Para los demás libros, se debe de mandar llamar la rutina que dispare el proceso:
+    'On Error Resume Next: Application.Run "Personal.xlsb!ExportToTxt.ExportToTxt"
+
 End Sub
 
 \\\--- END OF MODULE ---
 
 [Sheet1] 2 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
-\\\--- END OF MODULE ---
-
-[Sheet3] 2 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
@@ -216,12 +196,6 @@ Sub Log(Optional Mensaje As String)
 Debug.Print Mensaje
 Stream.WriteLine (Mensaje)
 End Sub
-\\\--- END OF MODULE ---
-
-[Sheet2] 2 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
 \\\--- END OF MODULE ---
 
 
