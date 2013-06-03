@@ -32,7 +32,7 @@ Módulos VBA:
 1. [ThisWorkbook] Tipo: 100
 2. [Sheet1] Tipo: 100
 3. [Sheet3] Tipo: 100
-4. [Module1] Tipo: 1
+4. [ExportToTxt] Tipo: 1
 5. [Sheet2] Tipo: 100
 
 Codigo:
@@ -41,7 +41,7 @@ Codigo:
 Option Explicit
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-Inicio
+ExportToTxt.ExportToTxt
 End Sub
 
 \\\--- END OF MODULE ---
@@ -58,7 +58,7 @@ Option Explicit
 
 \\\--- END OF MODULE ---
 
-[Module1] 147 líneas de código.
+[ExportToTxt] 156 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
@@ -77,7 +77,7 @@ Private Const TOKEN_MODULE_END = "\\\--- END OF MODULE ---"
 Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 
-Sub Inicio()
+Sub ExportToTxt()
 Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
 
 GenEncabezado
@@ -89,7 +89,16 @@ Stream.Close
 End Sub
 
 Function GetTXTFileName() As String
-GetTXTFileName = FSO.GetBaseName(ActiveWorkbook.name) & TOKEN_PRE_EXTENSION & TOKEN_EXTENSION
+    Dim NombreDelArchivo As String _
+    , Ruta As String _
+    , NombreCompleto As String
+    
+    NombreDelArchivo = FSO.GetBaseName(ActiveWorkbook.name) & TOKEN_PRE_EXTENSION & TOKEN_EXTENSION
+    Ruta = ActiveWorkbook.Path
+    NombreCompleto = FSO.BuildPath(Ruta, NombreDelArchivo)
+    
+    GetTXTFileName = NombreCompleto
+    'Debug.Print GetTXTFileName
 End Function
 
 Sub GenEncabezado()
