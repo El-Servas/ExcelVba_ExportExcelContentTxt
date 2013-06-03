@@ -1,0 +1,1 @@
+copy "ExportToTxt.xls" "%appdata%\Microsoft\Excel\MyLibs"
