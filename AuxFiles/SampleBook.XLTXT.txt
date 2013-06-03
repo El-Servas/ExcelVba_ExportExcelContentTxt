@@ -1,0 +1,44 @@
+Representación Textual del archivo de Excel: "SampleBook.xls"
+
+Hojas:
+1. [Sheet1]
+
+Contenido:
+[Sheet1]
+1. [A1] \Archivo de prueba con contenido, que va a usar la rutina ExportToTXT\
+2. [A3] \Algunas celdas con contenido:\
+3. [A4] \=RAND()\
+4. [B4] \=RAND()\
+5. [C4] \=RAND()\
+6. [A5] \=RAND()\
+7. [B5] \=RAND()\
+8. [C5] \=RAND()\
+9. [A6] \=RAND()\
+10. [B6] \=RAND()\
+11. [C6] \=RAND()\
+
+Nombres:
+
+Módulos VBA:
+1. [ThisWorkbook] Tipo: 100
+2. [Sheet1] Tipo: 100
+
+Codigo:
+[ThisWorkbook] 7 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+'Ejemplo de la línea que hay que añadir a los archivos que quieran exportarse a Txt.
+'Hay que substituir el nombre del archivo de macros personales de muestra, por el real.
+Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
+Application.Run "PersonalMacroFileExample.xls!ExportToTxt.ExportToTxt"
+End Sub
+\\\--- END OF MODULE ---
+
+[Sheet1] 2 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+\\\--- END OF MODULE ---
+
+
