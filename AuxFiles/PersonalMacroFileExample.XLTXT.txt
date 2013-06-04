@@ -1,0 +1,75 @@
+Representación Textual del archivo de Excel: "PersonalMacroFileExample.xls"
+
+Hojas:
+1. [Sheet1]
+
+Contenido:
+[Sheet1]
+
+Nombres:
+
+Módulos VBA:
+1. [ThisWorkbook] Tipo: 100
+2. [Sheet1] Tipo: 100
+3. [MyLibs] Tipo: 1
+4. [BookLoader] Tipo: 1
+
+Codigo:
+[ThisWorkbook] 6 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
+MyLibs.ExportToTxt
+End Sub
+
+\\\--- END OF MODULE ---
+
+[Sheet1] 2 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+\\\--- END OF MODULE ---
+
+[MyLibs] 19 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+'Ejemplo de la rutina (Y el módulo) que debe de estar presente en el Archivo de Macros Personales para correr la funcionalidad.
+Public Sub ExportToTxt()
+On Error GoTo ExportToTxt_Error
+
+    BookLoader.OpenBook "..\ExportToTxt.xls"
+    
+    Application.Run ("ExportToTxt.xls!ExportToTxt.ExportToTxt")
+    
+    BookLoader.CloseBook
+
+On Error GoTo 0
+Exit Sub
+
+ExportToTxt_Error:
+    Debug.Print "*** Ocurrió un error en la rutina ExportToTxt.ExportToTxt"
+    Debug.Print "*** Error No: " & Err.Number & ". " & Err.Description
+End Sub
+\\\--- END OF MODULE ---
+
+[BookLoader] 14 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Private SummonedBook As Workbook
+
+Public Sub OpenBook(bookFilenameRelativePath As String)
+    Dim CurrentActiveBook As Workbook: Set CurrentActiveBook = ActiveWorkbook
+    Set SummonedBook = Workbooks.Open(ThisWorkbook.Path & "\" & bookFilenameRelativePath)
+    CurrentActiveBook.Activate
+End Sub
+
+Public Sub CloseBook()
+    SummonedBook.Close False
+    Set SummonedBook = Nothing
+End Sub
+\\\--- END OF MODULE ---
+
+
