@@ -22,11 +22,11 @@ Option Explicit
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
 
-    'En caso de que se grabe éste libro, que es el que tiene el código, vamos a llamar directamente a la rutina_
-    ExportToTxt.ExportToTxt
+    'En caso de que se grabe éste libro, que es el que tiene el código, vamos a llamar directamente a la rutina:
+    ExportToTxt.ExportToTxt Me
 
     'Para los demás libros, se debe de mandar llamar la rutina que dispare el proceso:
-    'On Error Resume Next: Application.Run "Personal.xlsb!ExportToTxt.ExportToTxt"
+    'On Error Resume Next: Application.Run "Personal.xlsb!ExportToTxt.ExportToTxt", Me
 
 End Sub
 
@@ -38,7 +38,7 @@ Option Explicit
 
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 156 líneas de código.
+[ExportToTxt] 159 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
@@ -57,7 +57,10 @@ Private Const TOKEN_MODULE_END = "\\\--- END OF MODULE ---"
 Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 
-Sub ExportToTxt()
+Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
+
+Sub ExportToTxt(bookToExport As Workbook)
+Set BTE = bookToExport
 Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
 
 GenEncabezado
@@ -73,8 +76,8 @@ Function GetTXTFileName() As String
     , Ruta As String _
     , NombreCompleto As String
     
-    NombreDelArchivo = FSO.GetBaseName(ActiveWorkbook.name) & TOKEN_PRE_EXTENSION & TOKEN_EXTENSION
-    Ruta = ActiveWorkbook.Path
+    NombreDelArchivo = FSO.GetBaseName(BTE.name) & TOKEN_PRE_EXTENSION & TOKEN_EXTENSION
+    Ruta = BTE.Path
     NombreCompleto = FSO.BuildPath(Ruta, NombreDelArchivo)
     
     GetTXTFileName = NombreCompleto
@@ -82,7 +85,7 @@ Function GetTXTFileName() As String
 End Function
 
 Sub GenEncabezado()
-Log TOKEN_HEADER & """" & ActiveWorkbook.name & """"
+Log TOKEN_HEADER & """" & BTE.name & """"
 Log
 End Sub
 
@@ -133,7 +136,7 @@ Sub IteraModulos(DelegateName As String)
     Dim vbcomponent As vbcomponent
     Dim ix As Integer
     ix = 0
-    For Each vbcomponent In ActiveWorkbook.VBProject.VBComponents
+    For Each vbcomponent In BTE.VBProject.VBComponents
         ix = ix + 1
         Application.Run DelegateName, vbcomponent, ix
     Next
@@ -148,7 +151,7 @@ Sub IteraNombres(DelegateName As String)
     Dim name As name
     Dim ix As Integer
     ix = 0
-    For Each name In ActiveWorkbook.Names
+    For Each name In BTE.Names
         ix = ix + 1
         Application.Run DelegateName, name, ix
     Next
@@ -168,7 +171,7 @@ Sub IteraHojas(DelegateName As String)
     Dim sheet As Worksheet
     Dim ix As Integer
     ix = 0
-    For Each sheet In ActiveWorkbook.Worksheets
+    For Each sheet In BTE.Worksheets
         ix = ix + 1
         Application.Run DelegateName, sheet, ix
     Next
@@ -193,7 +196,7 @@ Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
 End Sub
 
 Sub Log(Optional Mensaje As String)
-Debug.Print Mensaje
+'Debug.Print Mensaje
 Stream.WriteLine (Mensaje)
 End Sub
 \\\--- END OF MODULE ---
