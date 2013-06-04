@@ -31,7 +31,7 @@ Option Explicit
 'Ejemplo de la línea que hay que añadir a los archivos que quieran exportarse a Txt.
 'Hay que substituir el nombre del archivo de macros personales de muestra, por el real.
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-Application.Run "PersonalMacroFileExample.xls!ExportToTxt.ExportToTxt"
+Application.Run "PersonalMacroFileExample.xls!MyLibs.ExportToTxt"
 End Sub
 \\\--- END OF MODULE ---
 

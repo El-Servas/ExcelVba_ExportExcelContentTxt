@@ -11,7 +11,7 @@ Nombres:
 Módulos VBA:
 1. [ThisWorkbook] Tipo: 100
 2. [Sheet1] Tipo: 100
-3. [ExportToTxt] Tipo: 1
+3. [MyLibs] Tipo: 1
 4. [BookLoader] Tipo: 1
 
 Codigo:
@@ -20,7 +20,7 @@ Codigo:
 Option Explicit
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-ExportToTxt.ExportToTxt
+MyLibs.ExportToTxt
 End Sub
 
 \\\--- END OF MODULE ---
@@ -31,7 +31,7 @@ Option Explicit
 
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 19 líneas de código.
+[MyLibs] 19 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
