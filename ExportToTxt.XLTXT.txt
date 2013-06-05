@@ -1,7 +1,7 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
 
 Hojas:
-1. [Sheet1]
+ [Sheet1]
 
 Contenido:
 [Sheet1]
@@ -166,7 +166,7 @@ Sub IteraNombres(DelegateName As String)
 End Sub
 
 Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
-    Log iterationIndex & ". [" & sheet.name & "]"
+    Log " [" & sheet.name & "]"
 End Sub
 
 Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
