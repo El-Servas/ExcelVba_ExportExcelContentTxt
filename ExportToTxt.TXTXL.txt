@@ -50,7 +50,7 @@ Option Explicit
 
 Option Explicit
 
-Private Const TOKEN_PRE_EXTENSION = ".XLTXT"
+Private Const TOKEN_PRE_EXTENSION = ".TXTXL"
 Private Const TOKEN_EXTENSION = ".txt"
 
 Private Const TOKEN_HEADER = "Representación Textual del archivo de Excel: "
