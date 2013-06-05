@@ -35,13 +35,11 @@ End Sub
 
 \\\--- END OF MODULE ---
 
-[Sheet1] 2 líneas de código.
+[Sheet1] 0 líneas de código.
 ///--- BEGINNING OF MODULE ---
-Option Explicit
-
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 172 líneas de código.
+[ExportToTxt] 175 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -136,7 +134,9 @@ Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
     Log "[" & vbcomp.name & "] " & CodeLines & " líneas de código."
     
     Log TOKEN_MODULE_BEGINS
-    Log vbcomp.CodeModule.Lines(1, CodeLines)
+    If CodeLines > 0 Then
+        Log vbcomp.CodeModule.Lines(1, CodeLines)
+    End If
     Log TOKEN_MODULE_END
     
     Log
@@ -192,12 +192,13 @@ Sub IteraHojas(DelegateName As String)
 End Sub
 
 Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
-    If cell.Formula = "" Then
-        ProcesaCelda = iterationIndex
-        Exit Function
+    If cell.FormulaHidden And cell.Parent.ProtectContents Then 'Fórmula escondida y la hoja está protegida.
+        ProcesaCelda = iterationIndex + 1
+        Log " [" & cell.Address(False, False) & "] \" & "**FÓRMULA INACCESIBLE**" & "\"
+    ElseIf cell.Formula <> "" Then 'Fórmula accesible, pero que no esté vacía.
+        ProcesaCelda = iterationIndex + 1
+        Log " [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
     End If
-    ProcesaCelda = iterationIndex + 1
-    Log " [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
 End Function
 
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
