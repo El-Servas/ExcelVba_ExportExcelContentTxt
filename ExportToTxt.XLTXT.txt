@@ -11,9 +11,9 @@ Nombres:
 2. [Ids] =Sheet1!$A$1:$A$4
 
 Módulos VBA:
-1. [ThisWorkbook] Tipo: 100
-2. [Sheet1] Tipo: 100
-3. [ExportToTxt] Tipo: 1
+ [ThisWorkbook] Tipo: 100
+ [Sheet1] Tipo: 100
+ [ExportToTxt] Tipo: 1
 
 Codigo:
 [ThisWorkbook] 12 líneas de código.
@@ -137,7 +137,7 @@ Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
 End Sub
 
 Sub ImprimeNombreDeModulo(vbcomp As vbcomponent, iterationIndex As Integer)
-    Log iterationIndex & ". [" & vbcomp.name & "] Tipo: " & vbcomp.Type
+    Log " [" & vbcomp.name & "] Tipo: " & vbcomp.Type
 End Sub
 
 Sub IteraModulos(DelegateName As String)
