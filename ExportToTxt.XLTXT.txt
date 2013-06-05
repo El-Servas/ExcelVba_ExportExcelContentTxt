@@ -38,14 +38,14 @@ Option Explicit
 
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 169 líneas de código.
+[ExportToTxt] 170 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
 ' Author    : +
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
-' Version   : v2.1 - 2013-06-05. Cambia la iteración de las celdas por columnas.
+' Version   : v2.2 - 2013-06-05. No incluye numeración en el desglose de las celdas.
 '---------------------------------------------------------------------------------------
 
 Option Explicit
@@ -191,7 +191,8 @@ Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
         Exit Function
     End If
     ProcesaCelda = iterationIndex + 1
-    Log ProcesaCelda & ". [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
+    'Log ProcesaCelda & ". [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
+    Log " [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
 End Function
 
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
