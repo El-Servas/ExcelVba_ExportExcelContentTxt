@@ -35,13 +35,11 @@ End Sub
 
 \\\--- END OF MODULE ---
 
-[Sheet1] 2 líneas de código.
+[Sheet1] 0 líneas de código.
 ///--- BEGINNING OF MODULE ---
-Option Explicit
-
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 172 líneas de código.
+[ExportToTxt] 174 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -136,7 +134,9 @@ Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
     Log "[" & vbcomp.name & "] " & CodeLines & " líneas de código."
     
     Log TOKEN_MODULE_BEGINS
-    Log vbcomp.CodeModule.Lines(1, CodeLines)
+    If CodeLines > 0 Then
+        Log vbcomp.CodeModule.Lines(1, CodeLines)
+    End If
     Log TOKEN_MODULE_END
     
     Log
