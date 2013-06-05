@@ -27,26 +27,29 @@ End Sub
 
 \\\--- END OF MODULE ---
 
-[Sheet1] 2 líneas de código.
+[Sheet1] 0 líneas de código.
 ///--- BEGINNING OF MODULE ---
-Option Explicit
-
 \\\--- END OF MODULE ---
 
-[MyLibs] 23 líneas de código.
+[MyLibs] 28 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
 'Ejemplo de la rutina (Y el módulo) que debe de estar presente en el Archivo de Macros Personales para correr la funcionalidad.
 Public Sub ExportToTxt(book As Workbook)
-On Error GoTo ExportToTxt_Error
 
+    On Error Resume Next 'Estos dos estatutos pueden fallar si todos los libros abiertos en excel están ocultos sin ventanas en Excel:
+    Dim BkCalculationMode: BkCalculationMode = Application.Calculation
+    Application.Calculation = xlCalculationManual
+    
+    On Error GoTo ExportToTxt_Error
     BookLoader.OpenBook "..\ExportToTxt.xls"
     
     Application.Run "ExportToTxt.xls!ExportToTxt.ExportToTxt", book
     
     BookLoader.CloseBook
-
+    On Error Resume Next: Application.Calculation = BkCalculationMode 'Puede fallar si no hay ventanas de libros en Excel. (O si falló al inicio de la rutina)
+    
 On Error GoTo 0
 Exit Sub
 
@@ -69,7 +72,7 @@ Private SummonedBook As Workbook
 Public Sub OpenBook(bookFilenameRelativePath As String)
     Dim CurrentActiveBook As Workbook: Set CurrentActiveBook = ActiveWorkbook
     Set SummonedBook = Workbooks.Open(ThisWorkbook.Path & "\" & bookFilenameRelativePath)
-    CurrentActiveBook.Activate
+    On Error Resume Next: CurrentActiveBook.Activate 'Puede fallar si el libro está oculto (en la ventana de Excel)
 End Sub
 
 Public Sub CloseBook()
