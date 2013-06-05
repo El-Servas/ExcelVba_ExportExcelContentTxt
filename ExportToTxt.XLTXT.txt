@@ -7,8 +7,8 @@ Contenido:
 [Sheet1]
 
 Nombres:
-1. [Desc] =Sheet1!$B:$B
-2. [Ids] =Sheet1!$A$1:$A$4
+ [Desc] =Sheet1!$B:$B
+ [Ids] =Sheet1!$A$1:$A$4
 
 Módulos VBA:
  [ThisWorkbook] Tipo: 100
@@ -152,7 +152,7 @@ End Sub
 
 
 Sub ImprimeNombre(name As name, iterationIndex As Integer)
-    Log iterationIndex & ". [" & name.name & "] " & name.RefersTo
+    Log " [" & name.name & "] " & name.RefersTo
 End Sub
 
 Sub IteraNombres(DelegateName As String)
