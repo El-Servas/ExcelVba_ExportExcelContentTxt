@@ -1,18 +1,20 @@
 Representación Textual del archivo de Excel: "PersonalMacroFileExample.xls"
 
 Hojas:
-1. [Sheet1]
+ [Sheet1]
 
 Contenido:
 [Sheet1]
 
 Nombres:
 
+Nombre del proyecto VB: [VBAProject]
+
 Módulos VBA:
-1. [ThisWorkbook] Tipo: 100
-2. [Sheet1] Tipo: 100
-3. [MyLibs] Tipo: 1
-4. [BookLoader] Tipo: 1
+ [ThisWorkbook] Tipo: 100
+ [Sheet1] Tipo: 100
+ [MyLibs] Tipo: 1
+ [BookLoader] Tipo: 1
 
 Codigo:
 [ThisWorkbook] 6 líneas de código.
