@@ -1,19 +1,19 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
 
 Hojas:
-1. [Sheet1]
+ [Sheet1]
 
 Contenido:
 [Sheet1]
 
 Nombres:
-1. [Desc] =Sheet1!$B:$B
-2. [Ids] =Sheet1!$A$1:$A$4
+ [Desc] =Sheet1!$B:$B
+ [Ids] =Sheet1!$A$1:$A$4
 
 Módulos VBA:
-1. [ThisWorkbook] Tipo: 100
-2. [Sheet1] Tipo: 100
-3. [ExportToTxt] Tipo: 1
+ [ThisWorkbook] Tipo: 100
+ [Sheet1] Tipo: 100
+ [ExportToTxt] Tipo: 1
 
 Codigo:
 [ThisWorkbook] 12 líneas de código.
@@ -45,7 +45,7 @@ Option Explicit
 ' Author    : +
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
-' Version   : v2.1 - 2013-06-05. Cambia la iteración de las celdas por columnas.
+' Version   : v2.2 - 2013-06-05. Elimina la numeración en las listas.
 '---------------------------------------------------------------------------------------
 
 Option Explicit
@@ -137,7 +137,7 @@ Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
 End Sub
 
 Sub ImprimeNombreDeModulo(vbcomp As vbcomponent, iterationIndex As Integer)
-    Log iterationIndex & ". [" & vbcomp.name & "] Tipo: " & vbcomp.Type
+    Log " [" & vbcomp.name & "] Tipo: " & vbcomp.Type
 End Sub
 
 Sub IteraModulos(DelegateName As String)
@@ -152,7 +152,7 @@ End Sub
 
 
 Sub ImprimeNombre(name As name, iterationIndex As Integer)
-    Log iterationIndex & ". [" & name.name & "] " & name.RefersTo
+    Log " [" & name.name & "] " & name.RefersTo
 End Sub
 
 Sub IteraNombres(DelegateName As String)
@@ -166,7 +166,7 @@ Sub IteraNombres(DelegateName As String)
 End Sub
 
 Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
-    Log iterationIndex & ". [" & sheet.name & "]"
+    Log " [" & sheet.name & "]"
 End Sub
 
 Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
@@ -191,7 +191,7 @@ Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
         Exit Function
     End If
     ProcesaCelda = iterationIndex + 1
-    Log ProcesaCelda & ". [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
+    Log " [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
 End Function
 
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
