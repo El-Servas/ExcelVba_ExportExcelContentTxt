@@ -10,7 +10,7 @@ Nombres:
  [Desc] =Sheet1!$B:$B
  [Ids] =Sheet1!$A$1:$A$4
 
-Nombre del proyecto VB: [VBAProject]
+Nombre del proyecto VB: [Lib_ExportToTxt]
 
 Módulos VBA:
  [ThisWorkbook] Tipo: 100
