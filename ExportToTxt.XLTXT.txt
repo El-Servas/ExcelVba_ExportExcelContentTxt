@@ -38,7 +38,7 @@ Option Explicit
 
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 170 líneas de código.
+[ExportToTxt] 169 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -191,7 +191,6 @@ Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
         Exit Function
     End If
     ProcesaCelda = iterationIndex + 1
-    'Log ProcesaCelda & ". [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
     Log " [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
 End Function
 
