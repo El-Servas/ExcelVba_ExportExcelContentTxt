@@ -10,10 +10,13 @@ Nombres:
  [Desc] =Sheet1!$B:$B
  [Ids] =Sheet1!$A$1:$A$4
 
+Nombre del proyecto VB: [Lib_ExportToTxt]
+
 Módulos VBA:
  [ThisWorkbook] Tipo: 100
  [Sheet1] Tipo: 100
  [ExportToTxt] Tipo: 1
+ [ExportToTxtClass] Tipo: 2
 
 Codigo:
 [ThisWorkbook] 12 líneas de código.
@@ -38,7 +41,7 @@ Option Explicit
 
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 169 líneas de código.
+[ExportToTxt] 172 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -50,7 +53,7 @@ Option Explicit
 
 Option Explicit
 
-Private Const TOKEN_PRE_EXTENSION = ".XLTXT"
+Private Const TOKEN_PRE_EXTENSION = ".TXTXL"
 Private Const TOKEN_EXTENSION = ".txt"
 
 Private Const TOKEN_HEADER = "Representación Textual del archivo de Excel: "
@@ -115,6 +118,9 @@ Log
 End Sub
 
 Sub GenModulos()
+Log "Nombre del proyecto VB: [" & BTE.VBProject.name & "]"
+Log
+
 Log TOKEN_MODULOS_TITLE
 IteraModulos "ImprimeNombreDeModulo"
 Log
@@ -209,6 +215,12 @@ Sub Log(Optional Mensaje As String)
 'Debug.Print Mensaje
 Stream.WriteLine (Mensaje)
 End Sub
+\\\--- END OF MODULE ---
+
+[ExportToTxtClass] 2 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
 \\\--- END OF MODULE ---
 
 
