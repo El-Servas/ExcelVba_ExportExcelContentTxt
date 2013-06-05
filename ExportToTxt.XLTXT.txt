@@ -38,8 +38,16 @@ Option Explicit
 
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 159 líneas de código.
+[ExportToTxt] 169 líneas de código.
 ///--- BEGINNING OF MODULE ---
+'---------------------------------------------------------------------------------------
+' Module    : ExportToTxt
+' Author    : +
+' Date      : 05/06/2013
+' Purpose   : Exporta una representación textual de un libro de Excel
+' Version   : v2.1 - 2013-06-05. Cambia la iteración de las celdas por columnas.
+'---------------------------------------------------------------------------------------
+
 Option Explicit
 
 Private Const TOKEN_PRE_EXTENSION = ".XLTXT"
@@ -187,11 +195,13 @@ Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
 End Function
 
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
-    Dim cell As Range
+    Dim cell As Range, column As Range
     Dim ix As Integer
     ix = 0
-    For Each cell In sheet.UsedRange.Cells
-        ix = Application.Run(DelegateName, cell, ix)
+    For Each column In sheet.UsedRange.Cells.Columns
+        For Each cell In column.Cells
+            ix = Application.Run(DelegateName, cell, ix)
+        Next
     Next
 End Sub
 
