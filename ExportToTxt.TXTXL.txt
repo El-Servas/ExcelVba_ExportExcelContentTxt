@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 222 líneas de código.
+[ExportToTxt] 230 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -114,16 +114,21 @@ Log
 End Sub
 
 Sub GenModulos()
-Log "Nombre del proyecto VB: [" & BTE.VBProject.name & "]"
-Log
-
-Log TOKEN_MODULOS_TITLE
-IteraModulos "ImprimeNombreDeModulo"
-Log
-
-Log TOKEN_CODIGO_TITLE
-IteraModulos "ProcesaModulo"
-Log
+    Log "Nombre del proyecto VB: [" & BTE.VBProject.name & "]"
+    Log
+    
+    'Antes de intentar acceder a los módulos, verificamos que el proyecto no esté protegido:
+    If BTE.VBProject.Protection <> vbext_pp_locked Then
+        Log TOKEN_MODULOS_TITLE
+        IteraModulos "ImprimeNombreDeModulo"
+        Log
+        
+        Log TOKEN_CODIGO_TITLE
+        IteraModulos "ProcesaModulo"
+        Log
+    Else
+        Log "** No se pueden exportar las macros si el proyecto está protegido. **"
+    End If
 End Sub
 
 Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
@@ -148,10 +153,13 @@ Sub IteraModulos(DelegateName As String)
     Dim vbcomponent As vbcomponent
     Dim ix As Integer
     ix = 0
+    On Error GoTo ErrorAccesandoVBProject
     For Each vbcomponent In BTE.VBProject.VBComponents
         ix = ix + 1
         Application.Run DelegateName, vbcomponent, ix
     Next
+ErrorAccesandoVBProject: 'Si truena no hacemos nada.
+    Exit Sub
 End Sub
 
 
