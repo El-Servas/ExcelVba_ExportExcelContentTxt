@@ -7,8 +7,6 @@ Contenido:
 [Sheet1]
 
 Nombres:
- [Desc] =Sheet1!$B:$B
- [Ids] =Sheet1!$A$1:$A$4
 
 Nombre del proyecto VB: [Lib_ExportToTxt]
 
@@ -39,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 175 líneas de código.
+[ExportToTxt] 222 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -172,13 +170,37 @@ Sub IteraNombres(DelegateName As String)
 End Sub
 
 Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
-    Log " [" & sheet.name & "]"
+    Dim Mensaje As String
+    If Not sheet.Visible Then Mensaje = Mensaje & " - Escondida"
+    If sheet.ProtectContents Then Mensaje = Mensaje & " - Protegida"
+    Log " [" & sheet.name & "]" & Mensaje
 End Sub
 
 Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
-    Log "[" & sheet.name & "]"
+    'Determinamos si la hoja está protegida y hay que desprotegerla.
+    Dim Mensaje As String
+    Dim BkHojaProtegida As Boolean
+    If sheet.ProtectContents Then
+        BkHojaProtegida = True
+        Mensaje = Mensaje & " - Hoja Protegida"
+        
+        'La intentamos desproteger
+        On Error Resume Next: sheet.Unprotect " "
+        
+        If Not sheet.ProtectContents Then
+            Mensaje = Mensaje & " - Se desprotegió sin contraseña."
+        Else
+            Mensaje = Mensaje & " - NO SE DESPROTEGIÓ."
+        End If
+    End If
+    
+    'Procesamos las celdas.
+    Log "[" & sheet.name & "]" & Mensaje
     IteraCeldas sheet, "ProcesaCelda"
     Log
+    
+    'Reprotegemos si es necesario
+    If BkHojaProtegida Then sheet.Protect
 End Sub
 
 Sub IteraHojas(DelegateName As String)
@@ -192,13 +214,36 @@ Sub IteraHojas(DelegateName As String)
 End Sub
 
 Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
+    Dim Direccion As String
+    Dim Contenido As String
+    Dim NombreDefinido As String
+    Dim CeldaSeProcesa As Boolean
+    
     If cell.FormulaHidden And cell.Parent.ProtectContents Then 'Fórmula escondida y la hoja está protegida.
-        ProcesaCelda = iterationIndex + 1
-        Log " [" & cell.Address(False, False) & "] \" & "**FÓRMULA INACCESIBLE**" & "\"
+        CeldaSeProcesa = True
+        Contenido = "**FÓRMULA INACCESIBLE**"
     ElseIf cell.Formula <> "" Then 'Fórmula accesible, pero que no esté vacía.
-        ProcesaCelda = iterationIndex + 1
-        Log " [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
+        CeldaSeProcesa = True
+        Contenido = cell.Formula
     End If
+    
+    If CeldaSeProcesa Then
+        ProcesaCelda = iterationIndex + 1
+        Direccion = cell.Parent.name & "!" & cell.Address(False, False): Direccion = "[" & Direccion & "] "
+        NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
+        Contenido = "\" & Contenido & "\"
+        Log Direccion & NombreDefinido & Contenido
+    Else
+        ProcesaCelda = iterationIndex
+    End If
+End Function
+
+Function GetNameOfCell(cell As Range) As String
+    On Error GoTo NoName
+    GetNameOfCell = cell.name.name
+Exit Function
+NoName:
+    GetNameOfCell = ""
 End Function
 
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
