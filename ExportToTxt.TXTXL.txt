@@ -39,7 +39,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 196 líneas de código.
+[ExportToTxt] 199 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -172,7 +172,10 @@ Sub IteraNombres(DelegateName As String)
 End Sub
 
 Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
-    Log " [" & sheet.name & "]"
+    Dim Mensaje As String
+    If Not sheet.Visible Then Mensaje = Mensaje & " - Escondida"
+    If sheet.ProtectContents Then Mensaje = Mensaje & " - Protegida"
+    Log " [" & sheet.name & "]" & Mensaje
 End Sub
 
 Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
