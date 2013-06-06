@@ -44,7 +44,7 @@ End Sub
 ' Author    : +
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
-' Version   : v2.4 - 2013-06-06.
+' Version   : v2.4.1 - 2013-06-06.
 '---------------------------------------------------------------------------------------
 
 Option Explicit
