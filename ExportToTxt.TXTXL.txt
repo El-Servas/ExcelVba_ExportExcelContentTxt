@@ -7,8 +7,6 @@ Contenido:
 [Sheet1]
 
 Nombres:
- [Desc] =Sheet1!$B:$B
- [Ids] =Sheet1!$A$1:$A$4
 
 Nombre del proyecto VB: [Lib_ExportToTxt]
 
@@ -39,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 199 líneas de código.
+[ExportToTxt] 212 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -216,12 +214,25 @@ Sub IteraHojas(DelegateName As String)
 End Sub
 
 Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
+    Dim Direccion As String
+    Dim Contenido As String
+    Dim CeldaSeProcesa As Boolean
+    
     If cell.FormulaHidden And cell.Parent.ProtectContents Then 'Fórmula escondida y la hoja está protegida.
-        ProcesaCelda = iterationIndex + 1
-        Log cell.Parent.name & "!" & cell.Address(False, False) & " \" & "**FÓRMULA INACCESIBLE**" & "\"
+        CeldaSeProcesa = True
+        Contenido = "**FÓRMULA INACCESIBLE**"
     ElseIf cell.Formula <> "" Then 'Fórmula accesible, pero que no esté vacía.
+        CeldaSeProcesa = True
+        Contenido = cell.Formula
+    End If
+    
+    If CeldaSeProcesa Then
         ProcesaCelda = iterationIndex + 1
-        Log cell.Parent.name & "!" & cell.Address(False, False) & " \" & cell.Formula & "\"
+        Direccion = cell.Parent.name & "!" & cell.Address(False, False)
+        'Todo: Determinar el nombre de la celda (si existe)
+        Log "[" & Direccion & "] \" & Contenido & "\"
+    Else
+        ProcesaCelda = iterationIndex
     End If
 End Function
 
