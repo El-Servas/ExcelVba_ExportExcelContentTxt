@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 212 líneas de código.
+[ExportToTxt] 222 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -216,6 +216,7 @@ End Sub
 Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
     Dim Direccion As String
     Dim Contenido As String
+    Dim NombreDefinido As String
     Dim CeldaSeProcesa As Boolean
     
     If cell.FormulaHidden And cell.Parent.ProtectContents Then 'Fórmula escondida y la hoja está protegida.
@@ -228,12 +229,21 @@ Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
     
     If CeldaSeProcesa Then
         ProcesaCelda = iterationIndex + 1
-        Direccion = cell.Parent.name & "!" & cell.Address(False, False)
-        'Todo: Determinar el nombre de la celda (si existe)
-        Log "[" & Direccion & "] \" & Contenido & "\"
+        Direccion = cell.Parent.name & "!" & cell.Address(False, False): Direccion = "[" & Direccion & "] "
+        NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
+        Contenido = "\" & Contenido & "\"
+        Log Direccion & NombreDefinido & Contenido
     Else
         ProcesaCelda = iterationIndex
     End If
+End Function
+
+Function GetNameOfCell(cell As Range) As String
+    On Error GoTo NoName
+    GetNameOfCell = cell.name.name
+Exit Function
+NoName:
+    GetNameOfCell = ""
 End Function
 
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
