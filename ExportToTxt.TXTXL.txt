@@ -194,10 +194,10 @@ End Sub
 Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
     If cell.FormulaHidden And cell.Parent.ProtectContents Then 'Fórmula escondida y la hoja está protegida.
         ProcesaCelda = iterationIndex + 1
-        Log " [" & cell.Address(False, False) & "] \" & "**FÓRMULA INACCESIBLE**" & "\"
+        Log cell.Parent.name & "!" & cell.Address(False, False) & " \" & "**FÓRMULA INACCESIBLE**" & "\"
     ElseIf cell.Formula <> "" Then 'Fórmula accesible, pero que no esté vacía.
         ProcesaCelda = iterationIndex + 1
-        Log " [" & cell.Address(False, False) & "] \" & cell.Formula & "\"
+        Log cell.Parent.name & "!" & cell.Address(False, False) & " \" & cell.Formula & "\"
     End If
 End Function
 
