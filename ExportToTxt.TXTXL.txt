@@ -39,7 +39,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 175 líneas de código.
+[ExportToTxt] 196 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -176,9 +176,30 @@ Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
 End Sub
 
 Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
-    Log "[" & sheet.name & "]"
+    'Determinamos si la hoja está protegida y hay que desprotegerla.
+    Dim Mensaje As String
+    Dim BkHojaProtegida As Boolean
+    If sheet.ProtectContents Then
+        BkHojaProtegida = True
+        Mensaje = Mensaje & " - Hoja Protegida"
+        
+        'La intentamos desproteger
+        On Error Resume Next: sheet.Unprotect " "
+        
+        If Not sheet.ProtectContents Then
+            Mensaje = Mensaje & " - Se desprotegió sin contraseña."
+        Else
+            Mensaje = Mensaje & " - NO SE DESPROTEGIÓ."
+        End If
+    End If
+    
+    'Procesamos las celdas.
+    Log "[" & sheet.name & "]" & Mensaje
     IteraCeldas sheet, "ProcesaCelda"
     Log
+    
+    'Reprotegemos si es necesario
+    If BkHojaProtegida Then sheet.Protect
 End Sub
 
 Sub IteraHojas(DelegateName As String)
