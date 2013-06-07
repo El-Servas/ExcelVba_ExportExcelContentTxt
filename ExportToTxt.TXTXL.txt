@@ -15,6 +15,7 @@ Módulos VBA:
  [Sheet1] Tipo: 100
  [ExportToTxt] Tipo: 1
  [ExportToTxtClass] Tipo: 2
+ [Module1] Tipo: 1
 
 Codigo:
 [ThisWorkbook] 12 líneas de código.
@@ -37,7 +38,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 296 líneas de código.
+[ExportToTxt] 311 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -68,7 +69,22 @@ Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
+Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
+    Select Case MsgBox("Inicio del proceso de exportación a texto." _
+                       & vbCrLf & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." _
+                       & vbCrLf & "" _
+                       , vbOKCancel Or vbInformation Or vbDefaultButton1, "Exportación a Texto")
+    Case vbCancel
+        Call MsgBox("Proceso cancelado.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
+        Exit Sub
+    End Select
+    
+    ExportToTxt bookToExport
+    
+    Call MsgBox("Proceso terminado.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
+End Sub
 Sub ExportToTxt(bookToExport As Workbook)
+    
 On Error GoTo Catch
     Set BTE = bookToExport
     Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
@@ -341,6 +357,15 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
+\\\--- END OF MODULE ---
+
+[Module1] 5 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Sub ExportarConConfirmacion()
+    ExportToTxt.ExportToTxtConConfirmacion ThisWorkbook
+End Sub
 \\\--- END OF MODULE ---
 
 
