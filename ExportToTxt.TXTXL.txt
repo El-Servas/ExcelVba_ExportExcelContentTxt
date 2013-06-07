@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 289 líneas de código.
+[ExportToTxt] 296 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -257,7 +257,11 @@ Sub IteraHojas(DelegateName As String)
     Next
 End Sub
 
+'Delegate
 Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
+On Error GoTo DelegateError
+    ProcesaCelda = iterationIndex 'Inmediatamente establecemos el valor
+    
     Dim Direccion As String
     Dim Contenido As String
     Dim NombreDefinido As String
@@ -272,14 +276,14 @@ Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
     End If
     
     If CeldaSeProcesa Then
-        ProcesaCelda = iterationIndex + 1
         Direccion = cell.Parent.name & "!" & cell.Address(False, False): Direccion = "[" & Direccion & "] "
         NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
         Contenido = "\" & Contenido & "\"
         Log Direccion & NombreDefinido & Contenido
-    Else
-        ProcesaCelda = iterationIndex
+        ProcesaCelda = iterationIndex + 1
     End If
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Function
 
 Function GetNameOfCell(cell As Range) As String
@@ -290,13 +294,15 @@ NoName:
     GetNameOfCell = ""
 End Function
 
+'Delegate caller
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
     Dim cell As Range, column As Range
     Dim ix As Integer
     ix = 0
     For Each column In sheet.UsedRange.Cells.Columns
         For Each cell In column.Cells
-            ix = Application.Run(DelegateName, cell, ix)
+            ErrNum = 0: ix = Application.Run(DelegateName, cell, ix)
+            If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
         Next
         DoEvents
     Next
@@ -318,7 +324,8 @@ End Function
 
 Sub PlantillaParaDelegado()
 On Error GoTo DelegateError
-    'Código aquí
+    'Código aquí.
+    'Si el delegado regresa valor, es buena idea asignarlo de inmediato, si se tiene un valor default.
 DelegateError:
     ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
