@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 249 líneas de código.
+[ExportToTxt] 273 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -65,6 +65,8 @@ Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
+
+Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
 Sub ExportToTxt(bookToExport As Workbook)
 On Error GoTo Catch
@@ -186,14 +188,20 @@ Sub IteraNombres(DelegateName As String)
     Next
 End Sub
 
+'Delegate
 Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
+On Error GoTo DelegateError
     Dim Mensaje As String
     If Not sheet.Visible Then Mensaje = Mensaje & " - Escondida"
     If sheet.ProtectContents Then Mensaje = Mensaje & " - Protegida"
     Log " [" & sheet.name & "]" & Mensaje
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate
 Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
+On Error GoTo DelegateError
     'Determinamos si la hoja está protegida y hay que desprotegerla.
     Dim Mensaje As String
     Dim BkHojaProtegida As Boolean
@@ -218,6 +226,8 @@ Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
     
     'Reprotegemos si es necesario
     If BkHojaProtegida Then sheet.Protect
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
 Sub IteraHojas(DelegateName As String)
@@ -226,7 +236,8 @@ Sub IteraHojas(DelegateName As String)
     ix = 0
     For Each sheet In BTE.Worksheets
         ix = ix + 1
-        Application.Run DelegateName, sheet, ix
+        ErrNum = 0: Application.Run DelegateName, sheet, ix
+        If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
 
@@ -288,6 +299,19 @@ Function StreamClosed() As Boolean
 IsClosed:
     StreamClosed = True
 End Function
+
+Sub PlantillaParaDelegado()
+On Error GoTo DelegateError
+    'Código aquí
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
+End Sub
+
+Sub PlantillaParaLlamarADelegado()
+    'ErrNum y ErrDesc deben de estar definidas a nivel módulo.
+    ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
+    If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
+End Sub
 \\\--- END OF MODULE ---
 
 [ExportToTxtClass] 2 líneas de código.
