@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 273 líneas de código.
+[ExportToTxt] 279 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -173,18 +173,23 @@ ErrorAccesandoVBProject: 'Si truena no hacemos nada.
     Exit Sub
 End Sub
 
-
+'Delegate
 Sub ImprimeNombre(name As name, iterationIndex As Integer)
+On Error GoTo DelegateError
     Log " [" & name.name & "] " & name.RefersTo
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate caller
 Sub IteraNombres(DelegateName As String)
     Dim name As name
     Dim ix As Integer
     ix = 0
     For Each name In BTE.Names
         ix = ix + 1
-        Application.Run DelegateName, name, ix
+        ErrNum = 0: Application.Run DelegateName, name, ix
+        If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
 
@@ -230,6 +235,7 @@ DelegateError:
     ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate caller
 Sub IteraHojas(DelegateName As String)
     Dim sheet As Worksheet
     Dim ix As Integer
