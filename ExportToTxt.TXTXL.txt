@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 279 líneas de código.
+[ExportToTxt] 289 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -142,7 +142,9 @@ Sub GenModulos()
     End If
 End Sub
 
+'Delegate
 Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
+On Error GoTo DelegateError
     Dim CodeLines As Integer
     CodeLines = vbcomp.CodeModule.CountOfLines
     Log "[" & vbcomp.name & "] " & CodeLines & " líneas de código."
@@ -154,12 +156,19 @@ Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
     Log TOKEN_MODULE_END
     
     Log
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate
 Sub ImprimeNombreDeModulo(vbcomp As vbcomponent, iterationIndex As Integer)
+On Error GoTo DelegateError
     Log " [" & vbcomp.name & "] Tipo: " & vbcomp.Type
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate caller
 Sub IteraModulos(DelegateName As String)
     Dim vbcomponent As vbcomponent
     Dim ix As Integer
@@ -167,7 +176,8 @@ Sub IteraModulos(DelegateName As String)
     On Error GoTo ErrorAccesandoVBProject
     For Each vbcomponent In BTE.VBProject.VBComponents
         ix = ix + 1
-        Application.Run DelegateName, vbcomponent, ix
+        ErrNum = 0: Application.Run DelegateName, vbcomponent, ix
+        If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 ErrorAccesandoVBProject: 'Si truena no hacemos nada.
     Exit Sub
