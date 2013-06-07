@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 230 líneas de código.
+[ExportToTxt] 249 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -67,15 +67,25 @@ Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
 
 Sub ExportToTxt(bookToExport As Workbook)
-Set BTE = bookToExport
-Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
-
-GenEncabezado
-GenHojas
-GenNombres
-GenModulos
-
-Stream.Close
+On Error GoTo Catch
+    Set BTE = bookToExport
+    Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
+    
+    GenEncabezado
+    GenHojas
+    GenNombres
+    GenModulos
+    
+    Log "** Fin del proceso de exportación **"
+    
+Catch:
+    If Err.Number <> 0 Then
+        Dim MensajeDeError As String
+        MensajeDeError = "Ocurrió un error al correr el proceso de exportación" & vbCrLf & "El error reportado es: " & vbCrLf & Err.Number & " " & Err.Description '& vbCrLf & Err.Source
+        MsgBox MensajeDeError
+        If Not StreamClosed() Then Log MensajeDeError
+    End If
+    Stream.Close
 End Sub
 
 Function GetTXTFileName() As String
@@ -88,7 +98,6 @@ Function GetTXTFileName() As String
     NombreCompleto = FSO.BuildPath(Ruta, NombreDelArchivo)
     
     GetTXTFileName = NombreCompleto
-    'Debug.Print GetTXTFileName
 End Function
 
 Sub GenEncabezado()
@@ -262,6 +271,7 @@ Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
         For Each cell In column.Cells
             ix = Application.Run(DelegateName, cell, ix)
         Next
+        DoEvents
     Next
 End Sub
 
@@ -269,6 +279,15 @@ Sub Log(Optional Mensaje As String)
 'Debug.Print Mensaje
 Stream.WriteLine (Mensaje)
 End Sub
+
+Function StreamClosed() As Boolean
+    On Error GoTo IsClosed
+    StreamClosed = Stream.AtEndOfLine
+    StreamClosed = False 'No marcó error, el Stream no está cerrado.
+    Exit Function
+IsClosed:
+    StreamClosed = True
+End Function
 \\\--- END OF MODULE ---
 
 [ExportToTxtClass] 2 líneas de código.
@@ -278,3 +297,4 @@ Option Explicit
 \\\--- END OF MODULE ---
 
 
+** Fin del proceso de exportación **
