@@ -37,14 +37,14 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 230 líneas de código.
+[ExportToTxt] 311 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
 ' Author    : +
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
-' Version   : v2.4.1 - 2013-06-06.
+' Version   : v2.5 - 2013-06-07.
 '---------------------------------------------------------------------------------------
 
 Option Explicit
@@ -66,16 +66,43 @@ Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
 
+Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
+
+Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
+    Select Case MsgBox("Inicio del proceso de exportación a texto." _
+                       & vbCrLf & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." _
+                       & vbCrLf & "" _
+                       , vbOKCancel Or vbInformation Or vbDefaultButton1, "Exportación a Texto")
+    Case vbCancel
+        Call MsgBox("Proceso cancelado.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
+        Exit Sub
+    End Select
+    
+    ExportToTxt bookToExport
+    
+    Call MsgBox("Proceso terminado.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
+End Sub
 Sub ExportToTxt(bookToExport As Workbook)
-Set BTE = bookToExport
-Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
-
-GenEncabezado
-GenHojas
-GenNombres
-GenModulos
-
-Stream.Close
+    
+On Error GoTo Catch
+    Set BTE = bookToExport
+    Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
+    
+    GenEncabezado
+    GenHojas
+    GenNombres
+    GenModulos
+    
+    Log "** Fin del proceso de exportación **"
+    
+Catch:
+    If Err.Number <> 0 Then
+        Dim MensajeDeError As String
+        MensajeDeError = "Ocurrió un error al correr el proceso de exportación" & vbCrLf & "El error reportado es: " & vbCrLf & Err.Number & " " & Err.Description '& vbCrLf & Err.Source
+        MsgBox MensajeDeError
+        If Not StreamClosed() Then Log MensajeDeError
+    End If
+    Stream.Close
 End Sub
 
 Function GetTXTFileName() As String
@@ -88,7 +115,6 @@ Function GetTXTFileName() As String
     NombreCompleto = FSO.BuildPath(Ruta, NombreDelArchivo)
     
     GetTXTFileName = NombreCompleto
-    'Debug.Print GetTXTFileName
 End Function
 
 Sub GenEncabezado()
@@ -131,7 +157,9 @@ Sub GenModulos()
     End If
 End Sub
 
+'Delegate
 Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
+On Error GoTo DelegateError
     Dim CodeLines As Integer
     CodeLines = vbcomp.CodeModule.CountOfLines
     Log "[" & vbcomp.name & "] " & CodeLines & " líneas de código."
@@ -143,12 +171,19 @@ Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
     Log TOKEN_MODULE_END
     
     Log
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate
 Sub ImprimeNombreDeModulo(vbcomp As vbcomponent, iterationIndex As Integer)
+On Error GoTo DelegateError
     Log " [" & vbcomp.name & "] Tipo: " & vbcomp.Type
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate caller
 Sub IteraModulos(DelegateName As String)
     Dim vbcomponent As vbcomponent
     Dim ix As Integer
@@ -156,35 +191,47 @@ Sub IteraModulos(DelegateName As String)
     On Error GoTo ErrorAccesandoVBProject
     For Each vbcomponent In BTE.VBProject.VBComponents
         ix = ix + 1
-        Application.Run DelegateName, vbcomponent, ix
+        ErrNum = 0: Application.Run DelegateName, vbcomponent, ix
+        If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 ErrorAccesandoVBProject: 'Si truena no hacemos nada.
     Exit Sub
 End Sub
 
-
+'Delegate
 Sub ImprimeNombre(name As name, iterationIndex As Integer)
+On Error GoTo DelegateError
     Log " [" & name.name & "] " & name.RefersTo
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate caller
 Sub IteraNombres(DelegateName As String)
     Dim name As name
     Dim ix As Integer
     ix = 0
     For Each name In BTE.Names
         ix = ix + 1
-        Application.Run DelegateName, name, ix
+        ErrNum = 0: Application.Run DelegateName, name, ix
+        If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
 
+'Delegate
 Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
+On Error GoTo DelegateError
     Dim Mensaje As String
     If Not sheet.Visible Then Mensaje = Mensaje & " - Escondida"
     If sheet.ProtectContents Then Mensaje = Mensaje & " - Protegida"
     Log " [" & sheet.name & "]" & Mensaje
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate
 Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
+On Error GoTo DelegateError
     'Determinamos si la hoja está protegida y hay que desprotegerla.
     Dim Mensaje As String
     Dim BkHojaProtegida As Boolean
@@ -209,19 +256,27 @@ Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
     
     'Reprotegemos si es necesario
     If BkHojaProtegida Then sheet.Protect
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
 
+'Delegate caller
 Sub IteraHojas(DelegateName As String)
     Dim sheet As Worksheet
     Dim ix As Integer
     ix = 0
     For Each sheet In BTE.Worksheets
         ix = ix + 1
-        Application.Run DelegateName, sheet, ix
+        ErrNum = 0: Application.Run DelegateName, sheet, ix
+        If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
 
+'Delegate
 Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
+On Error GoTo DelegateError
+    ProcesaCelda = iterationIndex 'Inmediatamente establecemos el valor
+    
     Dim Direccion As String
     Dim Contenido As String
     Dim NombreDefinido As String
@@ -236,14 +291,14 @@ Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
     End If
     
     If CeldaSeProcesa Then
-        ProcesaCelda = iterationIndex + 1
         Direccion = cell.Parent.name & "!" & cell.Address(False, False): Direccion = "[" & Direccion & "] "
         NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
         Contenido = "\" & Contenido & "\"
         Log Direccion & NombreDefinido & Contenido
-    Else
-        ProcesaCelda = iterationIndex
+        ProcesaCelda = iterationIndex + 1
     End If
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Function
 
 Function GetNameOfCell(cell As Range) As String
@@ -254,20 +309,46 @@ NoName:
     GetNameOfCell = ""
 End Function
 
+'Delegate caller
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
     Dim cell As Range, column As Range
     Dim ix As Integer
     ix = 0
     For Each column In sheet.UsedRange.Cells.Columns
         For Each cell In column.Cells
-            ix = Application.Run(DelegateName, cell, ix)
+            ErrNum = 0: ix = Application.Run(DelegateName, cell, ix)
+            If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
         Next
+        DoEvents
     Next
 End Sub
 
 Sub Log(Optional Mensaje As String)
 'Debug.Print Mensaje
 Stream.WriteLine (Mensaje)
+End Sub
+
+Function StreamClosed() As Boolean
+    On Error GoTo IsClosed
+    StreamClosed = Stream.AtEndOfLine
+    StreamClosed = False 'No marcó error, el Stream no está cerrado.
+    Exit Function
+IsClosed:
+    StreamClosed = True
+End Function
+
+Sub PlantillaParaDelegado()
+On Error GoTo DelegateError
+    'Código aquí.
+    'Si el delegado regresa valor, es buena idea asignarlo de inmediato, si se tiene un valor default.
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
+End Sub
+
+Sub PlantillaParaLlamarADelegado()
+    'ErrNum y ErrDesc deben de estar definidas a nivel módulo.
+    ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
+    If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
 End Sub
 \\\--- END OF MODULE ---
 
@@ -278,3 +359,4 @@ Option Explicit
 \\\--- END OF MODULE ---
 
 
+** Fin del proceso de exportación **

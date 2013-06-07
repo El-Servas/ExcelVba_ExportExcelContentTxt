@@ -31,9 +31,26 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[MyLibs] 28 líneas de código.
+[MyLibs] 71 líneas de código.
 ///--- BEGINNING OF MODULE ---
+'---------------------------------------------------------------------------------------
+' Module    : MyLibs
+' Author    : +
+' Date      : 04/06/2013
+' Purpose   : Módulo que va a servir de pegamento entre este archivo de Macros Personales y los diferentes archivos con librerías.
+'---------------------------------------------------------------------------------------
+
 Option Explicit
+
+'====================================================================================================
+' Uso de ExportToTxt
+'====================================================================================================
+'En los libros que se quiera exportar a texto, agregar el siguiente estatuto en su evento Workbook.BeforeSave:
+'Application.Run "Personal.xlsb!MyLibs.ExportToTxt", Me
+
+'Si se quiere hacer en demanda, usar esta línea en una rutina nueva en un módulo estándar:
+'Application.Run "Personal.xlsb!MyLibs.ExportToTxtConConfirmación", Me
+'====================================================================================================
 
 'Ejemplo de la rutina (Y el módulo) que debe de estar presente en el Archivo de Macros Personales para correr la funcionalidad.
 Public Sub ExportToTxt(book As Workbook)
@@ -46,6 +63,32 @@ Public Sub ExportToTxt(book As Workbook)
     BookLoader.OpenBook "..\ExportToTxt.xls"
     
     Application.Run "ExportToTxt.xls!ExportToTxt.ExportToTxt", book
+    
+    BookLoader.CloseBook
+    On Error Resume Next: Application.Calculation = BkCalculationMode 'Puede fallar si no hay ventanas de libros en Excel. (O si falló al inicio de la rutina)
+    
+On Error GoTo 0
+Exit Sub
+
+ExportToTxt_Error:
+    Debug.Print "*** Ocurrió un error en la rutina ExportToTxt.ExportToTxt"
+    Debug.Print "*** Error No: " & Err.Number & ". " & Err.Description
+    If Err.Number = 1004 Then 'Cachamos el error de apertura del archivo.
+    Else 'Cachamos el resto de los errores. Asumimos que se abrió el archivo y el error fue en la llamada de Application.Run
+        BookLoader.CloseBook
+    End If
+End Sub
+
+Public Sub ExportToTxtConConfirmacion()
+
+    On Error Resume Next 'Estos dos estatutos pueden fallar si todos los libros abiertos en excel están ocultos sin ventanas en Excel:
+    Dim BkCalculationMode: BkCalculationMode = Application.Calculation
+    Application.Calculation = xlCalculationManual
+    
+    On Error GoTo ExportToTxt_Error
+    BookLoader.OpenBook "..\ExportToTxt.xls"
+    
+    Application.Run "ExportToTxt.xls!ExportToTxt.ExportToTxtConConfirmacion", ActiveWorkbook
     
     BookLoader.CloseBook
     On Error Resume Next: Application.Calculation = BkCalculationMode 'Puede fallar si no hay ventanas de libros en Excel. (O si falló al inicio de la rutina)
@@ -82,3 +125,4 @@ End Sub
 \\\--- END OF MODULE ---
 
 
+** Fin del proceso de exportación **
