@@ -15,7 +15,6 @@ Módulos VBA:
  [Sheet1] Tipo: 100
  [ExportToTxt] Tipo: 1
  [ExportToTxtClass] Tipo: 2
- [Module1] Tipo: 1
 
 Codigo:
 [ThisWorkbook] 12 líneas de código.
@@ -45,7 +44,7 @@ End Sub
 ' Author    : +
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
-' Version   : v2.4.1 - 2013-06-06.
+' Version   : v2.5 - 2013-06-07.
 '---------------------------------------------------------------------------------------
 
 Option Explicit
@@ -357,15 +356,6 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
-\\\--- END OF MODULE ---
-
-[Module1] 5 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
-Sub ExportarConConfirmacion()
-    ExportToTxt.ExportToTxtConConfirmacion ThisWorkbook
-End Sub
 \\\--- END OF MODULE ---
 
 
