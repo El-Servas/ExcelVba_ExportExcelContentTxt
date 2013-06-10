@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 316 líneas de código.
+[ExportToTxt] 332 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -75,9 +75,21 @@ Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
                        & vbCrLf & "" _
                        , vbOKCancel Or vbInformation Or vbDefaultButton1, "Exportación a Texto")
     Case vbCancel
-        Call MsgBox("Proceso cancelado.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
+        MensajeProcesoCancelado
         Exit Sub
     End Select
+    
+    'Avisar si el proyecto de VB está protegido antes de proceder, y dar oportunidad de cancelar para desprotegerlo.
+    If bookToExport.VBProject.Protection = vbext_pp_locked Then
+        Select Case MsgBox("Atención:" _
+                           & vbCrLf & "El proyecto VB está protegido. No se exportarán las macros." _
+                           & vbCrLf & "¿Continuar?" _
+                           , vbOKCancel Or vbInformation Or vbDefaultButton1, "Exportación a Texto")
+        Case vbCancel
+            MensajeProcesoCancelado
+            Exit Sub
+        End Select
+    End If
     
     ExportToTxt bookToExport
     
@@ -341,6 +353,10 @@ Function StreamClosed() As Boolean
 IsClosed:
     StreamClosed = True
 End Function
+
+Sub MensajeProcesoCancelado()
+    Call MsgBox("Proceso cancelado.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
+End Sub
 
 Sub PlantillaParaDelegado()
 On Error GoTo DelegateError
