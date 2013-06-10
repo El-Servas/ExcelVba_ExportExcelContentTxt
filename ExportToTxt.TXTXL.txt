@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 311 líneas de código.
+[ExportToTxt] 316 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -60,6 +60,7 @@ Private Const TOKEN_MODULOS_TITLE = "Módulos VBA:"
 Private Const TOKEN_CODIGO_TITLE = "Codigo:"
 Private Const TOKEN_MODULE_BEGINS = "///--- BEGINNING OF MODULE ---"
 Private Const TOKEN_MODULE_END = "\\\--- END OF MODULE ---"
+Private Const SHEET_TITLE_CELL_LISTING_THRESHOLD = 25 'El número de celdas entre la etiqueta de la hoja en el listado de celdas
 
 Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
@@ -291,7 +292,11 @@ On Error GoTo DelegateError
     End If
     
     If CeldaSeProcesa Then
-        Direccion = cell.Parent.name & "!" & cell.Address(False, False): Direccion = "[" & Direccion & "] "
+        'Insertamos el nombre de la hoja cada N celdas
+        If iterationIndex Mod SHEET_TITLE_CELL_LISTING_THRESHOLD = 0 And iterationIndex <> 0 Then
+            Log "[" & cell.Parent.name & "]"
+        End If
+        Direccion = cell.Address(False, False): Direccion = "[" & Direccion & "] "
         NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
         Contenido = "\" & Contenido & "\"
         Log Direccion & NombreDefinido & Contenido
