@@ -15,6 +15,7 @@ Módulos VBA:
  [Sheet1] Tipo: 100
  [MyLibs] Tipo: 1
  [BookLoader] Tipo: 1
+ [BookLoaderClass] Tipo: 2
 
 Codigo:
 [ThisWorkbook] 6 líneas de código.
@@ -31,7 +32,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[MyLibs] 71 líneas de código.
+[MyLibs] 44 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : MyLibs
@@ -46,81 +47,126 @@ Option Explicit
 ' Uso de ExportToTxt
 '====================================================================================================
 'En los libros que se quiera exportar a texto, agregar el siguiente estatuto en su evento Workbook.BeforeSave:
-'Application.Run "Personal.xlsb!MyLibs.ExportToTxt", Me
-
-'Si se quiere hacer en demanda, usar esta línea en una rutina nueva en un módulo estándar:
-'Application.Run "Personal.xlsb!MyLibs.ExportToTxtConConfirmación", Me
+'Application.Run "Personal.xlsb!MyLibs.ExportToTxt", ThisWorkbook
 '====================================================================================================
 
 'Ejemplo de la rutina (Y el módulo) que debe de estar presente en el Archivo de Macros Personales para correr la funcionalidad.
 Public Sub ExportToTxt(book As Workbook)
-
-    On Error Resume Next 'Estos dos estatutos pueden fallar si todos los libros abiertos en excel están ocultos sin ventanas en Excel:
-    Dim BkCalculationMode: BkCalculationMode = Application.Calculation
-    Application.Calculation = xlCalculationManual
-    
-    On Error GoTo ExportToTxt_Error
-    BookLoader.OpenBook "..\ExportToTxt.xls"
-    
-    Application.Run "ExportToTxt.xls!ExportToTxt.ExportToTxt", book
-    
-    BookLoader.CloseBook
-    On Error Resume Next: Application.Calculation = BkCalculationMode 'Puede fallar si no hay ventanas de libros en Excel. (O si falló al inicio de la rutina)
-    
-On Error GoTo 0
-Exit Sub
-
-ExportToTxt_Error:
-    Debug.Print "*** Ocurrió un error en la rutina ExportToTxt.ExportToTxt"
-    Debug.Print "*** Error No: " & Err.Number & ". " & Err.Description
-    If Err.Number = 1004 Then 'Cachamos el error de apertura del archivo.
-    Else 'Cachamos el resto de los errores. Asumimos que se abrió el archivo y el error fue en la llamada de Application.Run
-        BookLoader.CloseBook
-    End If
+    CorreRutina "ExportToTxt", book
 End Sub
 
 Public Sub ExportToTxtConConfirmacion()
+    CorreRutina "ExportToTxtConConfirmacion", ActiveWorkbook
+End Sub
 
-    On Error Resume Next 'Estos dos estatutos pueden fallar si todos los libros abiertos en excel están ocultos sin ventanas en Excel:
-    Dim BkCalculationMode: BkCalculationMode = Application.Calculation
-    Application.Calculation = xlCalculationManual
+Public Sub CorreRutina(rutina As String, book As Workbook)
+On Error GoTo CorreRutina_Error
+    Dim BL As BookLoaderClass: Set BL = New BookLoaderClass
+    BL.SetCalculation (xlCalculationManual)
+    BL.ErrNum = 0: BL.OpenLibBook ("ExportToTxt.xls")
+    If BL.ErrNum <> 0 Then Err.Raise BL.ErrNum, , BL.ErrDesc
+
+    Dim NombreCompletoMacro As String 'Determinamos el nombre completo de la macro a correr
+    NombreCompletoMacro = "ExportToTxt.xls!ExportToTxt." & rutina
     
-    On Error GoTo ExportToTxt_Error
-    BookLoader.OpenBook "..\ExportToTxt.xls"
-    
-    Application.Run "ExportToTxt.xls!ExportToTxt.ExportToTxtConConfirmacion", ActiveWorkbook
-    
-    BookLoader.CloseBook
-    On Error Resume Next: Application.Calculation = BkCalculationMode 'Puede fallar si no hay ventanas de libros en Excel. (O si falló al inicio de la rutina)
-    
+    Application.Run NombreCompletoMacro, book
+
 On Error GoTo 0
 Exit Sub
 
-ExportToTxt_Error:
-    Debug.Print "*** Ocurrió un error en la rutina ExportToTxt.ExportToTxt"
+CorreRutina_Error:
+    Debug.Print "*** Ocurrió un error en la rutina Personal!MyLibs.CorreRutina"
     Debug.Print "*** Error No: " & Err.Number & ". " & Err.Description
-    If Err.Number = 1004 Then 'Cachamos el error de apertura del archivo.
-    Else 'Cachamos el resto de los errores. Asumimos que se abrió el archivo y el error fue en la llamada de Application.Run
-        BookLoader.CloseBook
-    End If
 End Sub
 \\\--- END OF MODULE ---
 
-[BookLoader] 14 líneas de código.
+[BookLoader] 1 líneas de código.
+///--- BEGINNING OF MODULE ---
+
+\\\--- END OF MODULE ---
+
+[BookLoaderClass] 81 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
-Private SummonedBook As Workbook
+Private Const LIB_PATH As String = "..\"
+'----------------------------------------------------------------------------------------------------
 
-Public Sub OpenBook(bookFilenameRelativePath As String)
-    Dim CurrentActiveBook As Workbook: Set CurrentActiveBook = ActiveWorkbook
-    Set SummonedBook = Workbooks.Open(ThisWorkbook.Path & "\" & bookFilenameRelativePath)
+Private CurrentActiveBook As Workbook
+Private SummonedBook As Workbook
+Private LeaveBookOpenOnTerminate As Boolean
+Private BackupCalculationMode As XlCalculation
+
+Private FSO As New Scripting.FileSystemObject
+
+Public ErrNum, ErrDesc 'Auxiliares para detalles de error, por si se sigue el modelo de manejo de errores tipo delegado.
+
+'Abre un libro a partir de la ruta completa. Deja activo el libro que lo estaba cuando se llama.
+Public Sub OpenBook(bookFilenameFullPath As String)
+    SaveCurrentBook
+
+    Dim JustName As String: JustName = FSO.GetFileName(bookFilenameFullPath)
+    If BookAlreadyOpen(JustName) Then
+        LeaveBookOpenOnTerminate = True
+        Set SummonedBook = Workbooks(JustName)
+    Else
+        Set SummonedBook = Workbooks.Open(bookFilenameFullPath)
+    End If
+    
+    RestoreCurrentBook
+End Sub
+
+'Un Lib book es relativo al libro actual. Se le concatena la ruta al directorio de las librerías.
+'Como es un método público de una clase, vamos a usar el modelo de manejo de errores de los delegados...
+Public Sub OpenLibBook(bookFileName As String)
+On Error GoTo DelegateError
+    Dim PathCompleta As String
+    PathCompleta = FSO.BuildPath(ThisWorkbook.Path, LIB_PATH)
+    PathCompleta = FSO.BuildPath(PathCompleta, bookFileName)
+    OpenBook (PathCompleta)
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description
+End Sub
+
+Private Sub SaveCurrentBook()
+    Set CurrentActiveBook = ActiveWorkbook
+End Sub
+
+Private Sub RestoreCurrentBook()
     On Error Resume Next: CurrentActiveBook.Activate 'Puede fallar si el libro está oculto (en la ventana de Excel)
 End Sub
 
-Public Sub CloseBook()
-    SummonedBook.Close False
+Private Sub CloseBook()
+    If Not SummonedBook Is Nothing Then SummonedBook.Close False
     Set SummonedBook = Nothing
+End Sub
+
+'Cuando la clase se destruye, cierra el libro, y recupera el modo de cálculo
+Private Sub Class_Terminate()
+    If Not LeaveBookOpenOnTerminate Then CloseBook
+    If BackupCalculationMode <> 0 Then RestoreCalculation
+End Sub
+
+'Determina si hay un libro abierto por nombre
+Private Function BookAlreadyOpen(bookName As String) As Boolean
+On Error GoTo NotOpen
+    Dim BookToTest: Set BookToTest = Workbooks(bookName)
+    BookAlreadyOpen = True 'No tronó: se encontró el libro.
+    Exit Function
+NotOpen:
+    BookAlreadyOpen = False
+End Function
+
+'Asigna el módo de cálculo, y guarda el actual, para poder recuperarlo posteriormente.
+Public Sub SetCalculation(calcMode As XlCalculation)
+    On Error Resume Next 'Estos dos estatutos pueden fallar si todos los libros abiertos en excel están ocultos sin ventana visible.
+    BackupCalculationMode = Application.Calculation
+    Application.Calculation = calcMode
+End Sub
+
+Private Sub RestoreCalculation()
+    On Error Resume Next 'Puede fallar si no hay ventanas de libros en Excel. (O si falló en SetCalculation())
+    Application.Calculation = BackupCalculationMode
 End Sub
 \\\--- END OF MODULE ---
 
