@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 352 líneas de código.
+[ExportToTxt] 355 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -249,6 +249,9 @@ End Sub
 'Delegate
 Sub ProcesaContenidoDeHoja(sheet As Worksheet, iterationIndex As Integer)
 On Error GoTo DelegateError
+
+    Application.StatusBar = "Exportando hoja " & iterationIndex & " de " & sheet.Parent.Worksheets.Count & " - [" & sheet.name & "]"
+
     'Determinamos si la hoja está protegida y hay que desprotegerla.
     Dim Mensaje As String
     Dim BkHojaProtegida As Boolean
@@ -273,6 +276,8 @@ On Error GoTo DelegateError
     
     'Reprotegemos si es necesario
     If BkHojaProtegida Then sheet.Protect
+    
+    Application.StatusBar = False
 DelegateError:
     ErrNum = Err.Number: ErrDesc = Err.Description
 End Sub
@@ -364,7 +369,6 @@ End Sub
 
 Sub SaveSettings()
     On Error Resume Next: Application.Calculation = xlCalculationManual: On Error GoTo 0
-    Application.DisplayStatusBar = False
     Application.ScreenUpdating = False
     Application.EnableEvents = False
     'Application.Interactive = False
@@ -374,7 +378,6 @@ Sub RestoreSettings()
     On Error Resume Next: Application.Calculation = xlCalculationAutomatic: On Error GoTo 0
     Application.Interactive = True
     Application.ScreenUpdating = True
-    Application.DisplayStatusBar = True
     Application.EnableEvents = True
 End Sub
 
