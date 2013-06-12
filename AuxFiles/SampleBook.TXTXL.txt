@@ -5,17 +5,17 @@ Hojas:
 
 Contenido:
 [Sheet1]
-[Sheet1!A1] \Archivo de prueba con contenido, que va a usar la rutina ExportToTXT\
-[Sheet1!A3] \Algunas celdas con contenido:\
-[Sheet1!A4] \=RAND()\
-[Sheet1!A5] \=RAND()\
-[Sheet1!A6] \=RAND()\
-[Sheet1!B4] \=RAND()\
-[Sheet1!B5] \=RAND()\
-[Sheet1!B6] \=RAND()\
-[Sheet1!C4] \=RAND()\
-[Sheet1!C5] \=RAND()\
-[Sheet1!C6] \=RAND()\
+[A1] \Archivo de prueba con contenido, que va a usar la rutina ExportToTXT\
+[A3] \Algunas celdas con contenido:\
+[A4] \=RAND()\
+[A5] \=RAND()\
+[A6] \=RAND()\
+[B4] \=RAND()\
+[B5] \=RAND()\
+[B6] \=RAND()\
+[C4] \=RAND()\
+[C5] \=RAND()\
+[C6] \=RAND()\
 
 Nombres:
 
