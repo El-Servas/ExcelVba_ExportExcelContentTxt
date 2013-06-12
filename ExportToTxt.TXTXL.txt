@@ -37,7 +37,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 332 líneas de código.
+[ExportToTxt] 352 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -101,12 +101,16 @@ On Error GoTo Catch
     Set BTE = bookToExport
     Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
     
+    SaveSettings
+    
     GenEncabezado
     GenHojas
     GenNombres
     GenModulos
     
     Log "** Fin del proceso de exportación **"
+    
+    RestoreSettings
     
 Catch:
     If Err.Number <> 0 Then
@@ -356,6 +360,22 @@ End Function
 
 Sub MensajeProcesoCancelado()
     Call MsgBox("Proceso cancelado.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
+End Sub
+
+Sub SaveSettings()
+    On Error Resume Next: Application.Calculation = xlCalculationManual: On Error GoTo 0
+    Application.DisplayStatusBar = False
+    Application.ScreenUpdating = False
+    Application.EnableEvents = False
+    'Application.Interactive = False
+End Sub
+
+Sub RestoreSettings()
+    On Error Resume Next: Application.Calculation = xlCalculationAutomatic: On Error GoTo 0
+    Application.Interactive = True
+    Application.ScreenUpdating = True
+    Application.DisplayStatusBar = True
+    Application.EnableEvents = True
 End Sub
 
 Sub PlantillaParaDelegado()
