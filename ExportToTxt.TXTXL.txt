@@ -66,6 +66,8 @@ Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
+Private StartTime As Date _
+        , EllapsedMinutes As String 'Para cronometrar el proceso.
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
@@ -93,25 +95,23 @@ Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
     
     ExportToTxt bookToExport
     
-    Call MsgBox("Proceso terminado.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
+    Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
 End Sub
 Sub ExportToTxt(bookToExport As Workbook)
     
 On Error GoTo Catch
     Set BTE = bookToExport
     Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
-    
     SaveSettings
+    StartTime = Date + Time
     
     GenEncabezado
     GenHojas
     GenNombres
     GenModulos
-    
-    Log "** Fin del proceso de exportación **"
-    
+    EllapsedMinutes = FormatNumber(DateDiff("s", StartTime, Date + Time) / 60, 2)
+    Log "** Fin del proceso de exportación. Proceso realizado en " & EllapsedMinutes & " minutos. **"
     RestoreSettings
-    
 Catch:
     If Err.Number <> 0 Then
         Dim MensajeDeError As String
@@ -400,4 +400,4 @@ Option Explicit
 \\\--- END OF MODULE ---
 
 
-** Fin del proceso de exportación **
+** Fin del proceso de exportación. Proceso realizado en 0.00 minutos. **
