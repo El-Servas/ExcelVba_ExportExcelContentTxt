@@ -1,5 +1,19 @@
 Representación Textual del archivo de Excel: "SampleBook.xls"
 
+Resumen
+=======
+
+ * Hojas: 1
+
+ * Nombres Definidos: 3
+
+ * Módulos de Visual Basic: 3
+
+ * Líneas de código VB: 21
+
+Detalle
+=======
+
 Hojas:
  [Sheet1]
 
@@ -18,12 +32,16 @@ Contenido:
 [C6] \=RAND()\
 
 Nombres:
+ [Nombre1] =Sheet1!$A$4:$A$6
+ [Nombre2] =Sheet1!$B$4:$B$6
+ [Nombre3] =Sheet1!$C$4:$C$6
 
 Nombre del proyecto VB: [VBAProject]
 
 Módulos VBA:
  [ThisWorkbook] Tipo: 100
  [Sheet1] Tipo: 100
+ [Module1] Tipo: 1
 
 Codigo:
 [ThisWorkbook] 7 líneas de código.
@@ -43,5 +61,21 @@ Option Explicit
 
 \\\--- END OF MODULE ---
 
+[Module1] 12 líneas de código.
+///--- BEGINNING OF MODULE ---
+'---------------------------------------------------------------------------------------
+' Module    : Module1
+' Author    : +
+' Date      : 13/06/2013
+' Purpose   : Dummy Module
+'---------------------------------------------------------------------------------------
 
-** Fin del proceso de exportación **
+Option Explicit
+
+Sub dummy()
+'Some Code here.
+End Sub
+\\\--- END OF MODULE ---
+
+
+** Fin del proceso de exportación. Proceso realizado en 0.02 minutos. **

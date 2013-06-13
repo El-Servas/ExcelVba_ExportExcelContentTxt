@@ -1,5 +1,19 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
 
+Resumen
+=======
+
+ * Hojas: 1
+
+ * Nombres Definidos: 0
+
+ * Módulos de Visual Basic: 5
+
+ * Líneas de código VB: 461
+
+Detalle
+=======
+
 Hojas:
  [Sheet1]
 
@@ -15,6 +29,7 @@ Módulos VBA:
  [Sheet1] Tipo: 100
  [ExportToTxt] Tipo: 1
  [ExportToTxtClass] Tipo: 2
+ [Plantillas] Tipo: 1
 
 Codigo:
 [ThisWorkbook] 12 líneas de código.
@@ -37,14 +52,14 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 355 líneas de código.
+[ExportToTxt] 430 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
 ' Author    : +
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
-' Version   : v2.6 - 2013-06-12.
+' Version   : v2.7 - 2013-06-12.
 '---------------------------------------------------------------------------------------
 
 Option Explicit
@@ -53,9 +68,11 @@ Private Const TOKEN_PRE_EXTENSION = ".TXTXL"
 Private Const TOKEN_EXTENSION = ".txt"
 
 Private Const TOKEN_HEADER = "Representación Textual del archivo de Excel: "
+Private Const TOKEN_SEPARATOR As String = "----------------------------------------------------------------------------------------------------"
 Private Const TOKEN_HOJAS_TITLE = "Hojas:"
 Private Const TOKEN_CONTENT_TITLE = "Contenido:"
 Private Const TOKEN_NOMBRES_TITLE = "Nombres:"
+Private Const TOKEN_VBPROJECT_PROTECTED As String = "El proyecto VB está protegido y no hay acceso a los módulos."
 Private Const TOKEN_MODULOS_TITLE = "Módulos VBA:"
 Private Const TOKEN_CODIGO_TITLE = "Codigo:"
 Private Const TOKEN_MODULE_BEGINS = "///--- BEGINNING OF MODULE ---"
@@ -66,14 +83,17 @@ Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
+Private VBProjectIsProtected As Boolean
 Private StartTime As Date _
         , EllapsedMinutes As String 'Para cronometrar el proceso.
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
 Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
-    Select Case MsgBox("Inicio del proceso de exportación a texto." _
-                       & vbCrLf & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." _
+    Set BTE = bookToExport
+    Select Case MsgBox("Inicio del proceso de exportación a texto del archivo:" _
+                       & vbCrLf & BTE.name _
+                       & vbCrLf & vbCrLf & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." _
                        & vbCrLf & "" _
                        , vbOKCancel Or vbInformation Or vbDefaultButton1, "Exportación a Texto")
     Case vbCancel
@@ -81,8 +101,8 @@ Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
         Exit Sub
     End Select
     
-    'Avisar si el proyecto de VB está protegido antes de proceder, y dar oportunidad de cancelar para desprotegerlo.
-    If bookToExport.VBProject.Protection = vbext_pp_locked Then
+    PreFlight
+    If VBProjectIsProtected Then
         Select Case MsgBox("Atención:" _
                            & vbCrLf & "El proyecto VB está protegido. No se exportarán las macros." _
                            & vbCrLf & "¿Continuar?" _
@@ -93,23 +113,26 @@ Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
         End Select
     End If
     
-    ExportToTxt bookToExport
+    ExportToTxt BTE
     
     Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
 End Sub
 Sub ExportToTxt(bookToExport As Workbook)
-    
 On Error GoTo Catch
     Set BTE = bookToExport
+    PreFlight
     Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
     SaveSettings
     StartTime = Date + Time
     
-    GenEncabezado
+    GenResumen
+    
     GenHojas
     GenNombres
     GenModulos
+    
     EllapsedMinutes = FormatNumber(DateDiff("s", StartTime, Date + Time) / 60, 2)
+    
     Log "** Fin del proceso de exportación. Proceso realizado en " & EllapsedMinutes & " minutos. **"
     RestoreSettings
 Catch:
@@ -121,6 +144,71 @@ Catch:
     End If
     Stream.Close
 End Sub
+
+Sub PreFlight()
+    VBProjectIsProtected = BTE.VBProject.Protection = vbext_pp_locked
+End Sub
+
+'====================================================================================================
+'RESUMEN
+'====================================================================================================
+
+Sub GenResumen()
+    'El resumen incluye:
+    
+    ' - Nombre del archivo
+    GenEncabezado
+    
+    Log "Resumen" & vbCrLf & "======="
+    Log
+    
+    Dim NumeroHojas As Integer: NumeroHojas = GetNumHojas
+    Log " * Hojas: " & NumeroHojas
+    Log
+    
+    Dim NumeroNombresDefinidos As Integer: NumeroNombresDefinidos = GetNumNombres
+    Log " * Nombres Definidos: " & NumeroNombresDefinidos
+    Log
+    
+    If Not VBProjectIsProtected Then
+        Dim NumeroModulosVB As Integer: NumeroModulosVB = GetNumModulosVB
+        Log " * Módulos de Visual Basic: " & NumeroModulosVB
+        Log
+        
+        Dim NumeroLineasCodigo As Integer: NumeroLineasCodigo = GetNumLineas
+        Log " * Líneas de código VB: " & NumeroLineasCodigo
+    Else
+        Log TOKEN_VBPROJECT_PROTECTED
+    End If
+    Log
+    
+    Log "Detalle" & vbCrLf & "======="
+    Log
+End Sub
+
+Function GetNumHojas() As Integer
+    GetNumHojas = BTE.Worksheets.Count
+End Function
+
+Function GetNumNombres() As Integer
+    GetNumNombres = BTE.Names.Count
+End Function
+
+Function GetNumModulosVB() As Integer
+    GetNumModulosVB = BTE.VBProject.VBComponents.Count
+End Function
+
+Function GetNumLineas() As Integer
+    'Iteramos los componentes para contar las líneas.
+    Dim NumLineas As Integer
+    Dim vbc As vbcomponent
+    For Each vbc In BTE.VBProject.VBComponents
+        NumLineas = NumLineas + vbc.CodeModule.CountOfLines
+    Next
+    GetNumLineas = NumLineas
+End Function
+
+'====================================================================================================
 
 Function GetTXTFileName() As String
     Dim NombreDelArchivo As String _
@@ -161,18 +249,21 @@ Sub GenModulos()
     Log
     
     'Antes de intentar acceder a los módulos, verificamos que el proyecto no esté protegido:
-    If BTE.VBProject.Protection <> vbext_pp_locked Then
+    If Not VBProjectIsProtected Then
         Log TOKEN_MODULOS_TITLE
         IteraModulos "ImprimeNombreDeModulo"
         Log
         
         Log TOKEN_CODIGO_TITLE
         IteraModulos "ProcesaModulo"
-        Log
     Else
-        Log "** No se pueden exportar las macros si el proyecto está protegido. **"
+        Log TOKEN_VBPROJECT_PROTECTED
     End If
+    Log
 End Sub
+
+'MODULOS VB
+'====================================================================================================
 
 'Delegate
 Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
@@ -215,6 +306,9 @@ ErrorAccesandoVBProject: 'Si truena no hacemos nada.
     Exit Sub
 End Sub
 
+'RANGOS NOMBRADOS
+'====================================================================================================
+
 'Delegate
 Sub ImprimeNombre(name As name, iterationIndex As Integer)
 On Error GoTo DelegateError
@@ -234,6 +328,9 @@ Sub IteraNombres(DelegateName As String)
         If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
+
+'HOJAS
+'====================================================================================================
 
 'Delegate
 Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
@@ -294,6 +391,9 @@ Sub IteraHojas(DelegateName As String)
     Next
 End Sub
 
+'CELDAS
+'====================================================================================================
+
 'Delegate
 Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
 On Error GoTo DelegateError
@@ -327,14 +427,6 @@ DelegateError:
     ErrNum = Err.Number: ErrDesc = Err.Description
 End Function
 
-Function GetNameOfCell(cell As Range) As String
-    On Error GoTo NoName
-    GetNameOfCell = cell.name.name
-Exit Function
-NoName:
-    GetNameOfCell = ""
-End Function
-
 'Delegate caller
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
     Dim cell As Range, column As Range
@@ -348,6 +440,16 @@ Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
         DoEvents
     Next
 End Sub
+
+Function GetNameOfCell(cell As Range) As String
+    On Error GoTo NoName
+    GetNameOfCell = cell.name.name
+Exit Function
+NoName:
+    GetNameOfCell = ""
+End Function
+
+'====================================================================================================
 
 Sub Log(Optional Mensaje As String)
 'Debug.Print Mensaje
@@ -381,6 +483,21 @@ Sub RestoreSettings()
     Application.EnableEvents = True
 End Sub
 
+
+\\\--- END OF MODULE ---
+
+[ExportToTxtClass] 2 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+\\\--- END OF MODULE ---
+
+[Plantillas] 17 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Public ErrNum, ErrDesc 'Para que compile el proyecto.
+
 Sub PlantillaParaDelegado()
 On Error GoTo DelegateError
     'Código aquí.
@@ -394,12 +511,6 @@ Sub PlantillaParaLlamarADelegado()
     ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
     If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
 End Sub
-\\\--- END OF MODULE ---
-
-[ExportToTxtClass] 2 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
 \\\--- END OF MODULE ---
 
 
