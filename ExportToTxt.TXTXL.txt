@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 461
+ * Líneas de código VB: 474
 
 Detalle
 =======
@@ -52,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 430 líneas de código.
+[ExportToTxt] 443 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -61,8 +61,10 @@ Option Explicit
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
 '---------------------------------------------------------------------------------------
-Private Const VERSION As String = "v2.7 - 2013-06-12"
+Private Const VERSION As String = "POST v2.7 - 2013-06-12"
 '---------------------------------------------------------------------------------------
+Private Const LIB_NAME As String = "Lib_ExportToTxt"
+Private Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
 
 Private Const TOKEN_PRE_EXTENSION = ".TXTXL"
 Private Const TOKEN_EXTENSION = ".txt"
@@ -79,8 +81,12 @@ Private Const TOKEN_MODULE_BEGINS = "///--- BEGINNING OF MODULE ---"
 Private Const TOKEN_MODULE_END = "\\\--- END OF MODULE ---"
 Private Const SHEET_TITLE_CELL_LISTING_THRESHOLD = 25 'El número de celdas entre la etiqueta de la hoja en el listado de celdas
 
+Private Const TOKEN_MESSAGEBOX_TITLE As String = "Exportación a Texto"
+Private Const ERROR_1 As String = "Proceso cancelado manualmente."
+
 Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
+Private flVisual As Boolean 'Bandera que define si la ejecución es con confirmación visual.
 
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
 Private VBProjectIsProtected As Boolean
@@ -90,37 +96,16 @@ Private StartTime As Date _
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
 Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
-    Set BTE = bookToExport
-    Select Case MsgBox("Inicio del proceso de exportación a texto del archivo:" _
-                       & vbCrLf & BTE.name _
-                       & vbCrLf & vbCrLf & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." _
-                       & vbCrLf & vbCrLf & "Lib_ExportToTxt [ExportToTxt.xls] " & VERSION _
-                       , vbOKCancel Or vbInformation Or vbDefaultButton1, "Exportación a Texto")
-    Case vbCancel
-        MensajeProcesoCancelado
-        Exit Sub
-    End Select
-    
-    PreFlight
-    If VBProjectIsProtected Then
-        Select Case MsgBox("Atención:" _
-                           & vbCrLf & "El proyecto VB está protegido. No se exportarán las macros." _
-                           & vbCrLf & "¿Continuar?" _
-                           , vbOKCancel Or vbInformation Or vbDefaultButton1, "Exportación a Texto")
-        Case vbCancel
-            MensajeProcesoCancelado
-            Exit Sub
-        End Select
-    End If
-    
-    ExportToTxt BTE
-    
-    Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
+    ExportToTxt bookToExport, True
 End Sub
-Sub ExportToTxt(bookToExport As Workbook)
+Sub ExportToTxt(bookToExport As Workbook, Optional visual As Boolean = False)
 On Error GoTo Catch
     Set BTE = bookToExport
+    flVisual = visual
     PreFlight
+   
+    If flVisual Then If Not ConfirmarEjecucion Then Err.Raise vbObjectError + 1, , ERROR_1
+
     Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
     SaveSettings
     StartTime = Date + Time
@@ -134,12 +119,16 @@ On Error GoTo Catch
     EllapsedMinutes = FormatNumber(DateDiff("s", StartTime, Date + Time) / 60, 2)
     
     Log "** Fin del proceso de exportación. Proceso realizado en " & EllapsedMinutes & " minutos. **"
+    Stream.Close
     RestoreSettings
+    
+    If flVisual Then Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
 Catch:
     If Err.Number <> 0 Then
         Dim MensajeDeError As String
-        MensajeDeError = "Ocurrió un error al correr el proceso de exportación" & vbCrLf & "El error reportado es: " & vbCrLf & Err.Number & " " & Err.Description '& vbCrLf & Err.Source
-        MsgBox MensajeDeError
+        MensajeDeError = "Ocurrió un error al correr el proceso de exportación:" & vbCrLf & vbCrLf _
+            & Err.Number & " " & Err.Description
+        MsgBox MensajeDeError, vbCritical, TOKEN_MESSAGEBOX_TITLE
         If Not StreamClosed() Then Log MensajeDeError
     End If
     Stream.Close
@@ -148,6 +137,34 @@ End Sub
 Sub PreFlight()
     VBProjectIsProtected = BTE.VBProject.Protection = vbext_pp_locked
 End Sub
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: 'Despliega la confirmación visual inicial y regresa si se continúa o se cancela el proceso.
+'----------------------------------------------------------------------------------------------------
+Function ConfirmarEjecucion() As Boolean
+    'Preparamos el mensaje, aprovechando que ya se hizo el PreFlight.
+    Dim MensajeConfirmacion As String
+    'Intro del mensaje con el nombre del archivo a exportar.
+    MensajeConfirmacion = "Inicio del proceso de exportación a texto del archivo:" & vbCrLf _
+        & BTE.name & vbCrLf & vbCrLf _
+        & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." & vbCrLf & vbCrLf
+    
+    MensajeConfirmacion = MensajeConfirmacion & "Verificación previa:" & vbCrLf
+    'Estado de la protección del proyecto VB.
+    If VBProjectIsProtected Then
+        MensajeConfirmacion = MensajeConfirmacion & "* " & UCase(TOKEN_VBPROJECT_PROTECTED) & vbCrLf & vbCrLf
+    Else
+        MensajeConfirmacion = MensajeConfirmacion & "* " & "El proyecto de Visual Basic es accesible." & vbCrLf & vbCrLf
+    End If
+    
+    'Pie del mensaje con el número de la versión.
+    MensajeConfirmacion = MensajeConfirmacion & "Lib_ExportToTxt [ExportToTxt.xls] " & VERSION
+                   
+    Select Case MsgBox(MensajeConfirmacion, vbOKCancel Or vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
+    Case vbOK
+        ConfirmarEjecucion = True
+    End Select
+End Function
 
 '====================================================================================================
 'RESUMEN
@@ -464,10 +481,6 @@ Function StreamClosed() As Boolean
 IsClosed:
     StreamClosed = True
 End Function
-
-Sub MensajeProcesoCancelado()
-    Call MsgBox("Proceso cancelado.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
-End Sub
 
 Sub SaveSettings()
     On Error Resume Next: Application.Calculation = xlCalculationManual: On Error GoTo 0
