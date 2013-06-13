@@ -1,4 +1,5 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
+Fecha y hora de generación: 13/06/2013 03:21:50 p.m.
 
 Resumen
 =======
@@ -9,7 +10,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 477
+ * Líneas de código VB: 476
 
 Detalle
 =======
@@ -52,7 +53,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 446 líneas de código.
+[ExportToTxt] 445 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -81,7 +82,7 @@ Private Const TOKEN_MODULE_BEGINS = "///--- BEGINNING OF MODULE ---"
 Private Const TOKEN_MODULE_END = "\\\--- END OF MODULE ---"
 Private Const SHEET_TITLE_CELL_LISTING_THRESHOLD = 25 'El número de celdas entre la etiqueta de la hoja en el listado de celdas
 
-Private Const TOKEN_MESSAGEBOX_TITLE As String = "Exportación a Texto"
+Private Const TOKEN_MESSAGEBOX_TITLE As String = LIB_FRIENDLY_NAME
 Private Const ERROR_1 As String = "Proceso cancelado manualmente."
 
 Private FSO As New Scripting.FileSystemObject
@@ -119,8 +120,6 @@ On Error GoTo Catch
     EllapsedMinutes = FormatNumber(DateDiff("s", StartTime, Date + Time) / 60, 2)
     
     Log "** Fin del proceso de exportación. Proceso realizado en " & EllapsedMinutes & " minutos. **"
-    Stream.Close
-    RestoreSettings
     
     If flVisual Then Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
 Catch:
@@ -131,7 +130,9 @@ Catch:
         MsgBox MensajeDeError, vbCritical, TOKEN_MESSAGEBOX_TITLE
         If Not StreamClosed() Then Log MensajeDeError
     End If
-    If Not StreamClosed() Then Stream.Close
+    
+    RestoreSettings
+    If Not Stream Is Nothing Then Stream.Close
 End Sub
 
 Sub PreFlight()
@@ -171,8 +172,6 @@ End Function
 '====================================================================================================
 
 Sub GenResumen()
-    'El resumen incluye:
-    
     ' - Nombre del archivo
     GenEncabezado
     
@@ -241,6 +240,7 @@ End Function
 
 Sub GenEncabezado()
 Log TOKEN_HEADER & """" & BTE.name & """"
+Log "Fecha y hora de generación: " & Date + Time
 Log
 End Sub
 
