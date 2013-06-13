@@ -1,5 +1,19 @@
 Representación Textual del archivo de Excel: "PersonalMacroFileExample.xls"
 
+Resumen
+=======
+
+ * Hojas: 1
+
+ * Nombres Definidos: 0
+
+ * Módulos de Visual Basic: 5
+
+ * Líneas de código VB: 127
+
+Detalle
+=======
+
 Hojas:
  [Sheet1]
 
@@ -32,7 +46,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[MyLibs] 44 líneas de código.
+[MyLibs] 36 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : MyLibs
@@ -46,37 +60,29 @@ Option Explicit
 '====================================================================================================
 ' Uso de ExportToTxt
 '====================================================================================================
-'En los libros que se quiera exportar a texto, agregar el siguiente estatuto en su evento Workbook.BeforeSave:
+'En los libros que se quiera exportar a texto automáticamente al grabar, agregar el siguiente estatuto en su evento Workbook.BeforeSave:
 'Application.Run "Personal.xlsb!MyLibs.ExportToTxt", ThisWorkbook
+'
+'Para exportar en demanda, ejecutar la rutina ExportToTxtConConfirmacion, y se exportará el libro activo.
 '====================================================================================================
 
-'Ejemplo de la rutina (Y el módulo) que debe de estar presente en el Archivo de Macros Personales para correr la funcionalidad.
-Public Sub ExportToTxt(book As Workbook)
-    CorreRutina "ExportToTxt", book
-End Sub
-
-Public Sub ExportToTxtConConfirmacion()
-    CorreRutina "ExportToTxtConConfirmacion", ActiveWorkbook
-End Sub
-
-Public Sub CorreRutina(rutina As String, book As Workbook)
-On Error GoTo CorreRutina_Error
-    Dim BL As BookLoaderClass: Set BL = New BookLoaderClass
+Public Sub ExportToTxt(book As Workbook, Optional visual As Boolean = False)
+On Error GoTo ExportToTxt_Error
+    Dim BL As New BookLoaderClass
     BL.SetCalculation (xlCalculationManual)
     BL.ErrNum = 0: BL.OpenLibBook ("ExportToTxt.xls")
     If BL.ErrNum <> 0 Then Err.Raise BL.ErrNum, , BL.ErrDesc
-
-    Dim NombreCompletoMacro As String 'Determinamos el nombre completo de la macro a correr
-    NombreCompletoMacro = "ExportToTxt.xls!ExportToTxt." & rutina
     
-    Application.Run NombreCompletoMacro, book
-
+    Application.Run "ExportToTxt.xls!ExportToTxt.ExportToTxt", book, visual
 On Error GoTo 0
 Exit Sub
-
-CorreRutina_Error:
+ExportToTxt_Error:
     Debug.Print "*** Ocurrió un error en la rutina Personal!MyLibs.CorreRutina"
     Debug.Print "*** Error No: " & Err.Number & ". " & Err.Description
+End Sub
+
+Public Sub ExportToTxtConConfirmacion()
+    ExportToTxt ActiveWorkbook, True
 End Sub
 \\\--- END OF MODULE ---
 
@@ -85,7 +91,7 @@ End Sub
 
 \\\--- END OF MODULE ---
 
-[BookLoaderClass] 81 líneas de código.
+[BookLoaderClass] 84 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
@@ -133,7 +139,9 @@ Private Sub SaveCurrentBook()
 End Sub
 
 Private Sub RestoreCurrentBook()
-    On Error Resume Next: CurrentActiveBook.Activate 'Puede fallar si el libro está oculto (en la ventana de Excel)
+    On Error Resume Next
+    CurrentActiveBook.Activate 'Puede fallar si el libro está oculto (en la ventana de Excel)
+    On Error GoTo 0
 End Sub
 
 Private Sub CloseBook()
@@ -167,8 +175,9 @@ End Sub
 Private Sub RestoreCalculation()
     On Error Resume Next 'Puede fallar si no hay ventanas de libros en Excel. (O si falló en SetCalculation())
     Application.Calculation = BackupCalculationMode
+    On Error GoTo 0
 End Sub
 \\\--- END OF MODULE ---
 
 
-** Fin del proceso de exportación **
+** Fin del proceso de exportación. Proceso realizado en 0.00 minutos. **
