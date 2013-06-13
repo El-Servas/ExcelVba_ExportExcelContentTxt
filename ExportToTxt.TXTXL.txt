@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 460
+ * Líneas de código VB: 461
 
 Detalle
 =======
@@ -52,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 429 líneas de código.
+[ExportToTxt] 430 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -72,6 +72,7 @@ Private Const TOKEN_SEPARATOR As String = "-------------------------------------
 Private Const TOKEN_HOJAS_TITLE = "Hojas:"
 Private Const TOKEN_CONTENT_TITLE = "Contenido:"
 Private Const TOKEN_NOMBRES_TITLE = "Nombres:"
+Private Const TOKEN_VBPROJECT_PROTECTED As String = "El proyecto VB está protegido y no hay acceso a los módulos."
 Private Const TOKEN_MODULOS_TITLE = "Módulos VBA:"
 Private Const TOKEN_CODIGO_TITLE = "Codigo:"
 Private Const TOKEN_MODULE_BEGINS = "///--- BEGINNING OF MODULE ---"
@@ -177,7 +178,7 @@ Sub GenResumen()
         Dim NumeroLineasCodigo As Integer: NumeroLineasCodigo = GetNumLineas
         Log " * Líneas de código VB: " & NumeroLineasCodigo
     Else
-        Log " El proyecto VB está protegido y no hay acceso a los módulos."
+        Log TOKEN_VBPROJECT_PROTECTED
     End If
     Log
     
@@ -248,17 +249,17 @@ Sub GenModulos()
     Log
     
     'Antes de intentar acceder a los módulos, verificamos que el proyecto no esté protegido:
-    If BTE.VBProject.Protection <> vbext_pp_locked Then
+    If Not VBProjectIsProtected Then
         Log TOKEN_MODULOS_TITLE
         IteraModulos "ImprimeNombreDeModulo"
         Log
         
         Log TOKEN_CODIGO_TITLE
         IteraModulos "ProcesaModulo"
-        Log
     Else
-        Log "** No se pueden exportar las macros si el proyecto está protegido. **"
+        Log TOKEN_VBPROJECT_PROTECTED
     End If
+    Log
 End Sub
 
 'MODULOS VB
