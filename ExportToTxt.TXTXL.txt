@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 474
+ * Líneas de código VB: 477
 
 Detalle
 =======
@@ -52,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 443 líneas de código.
+[ExportToTxt] 446 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -131,7 +131,7 @@ Catch:
         MsgBox MensajeDeError, vbCritical, TOKEN_MESSAGEBOX_TITLE
         If Not StreamClosed() Then Log MensajeDeError
     End If
-    Stream.Close
+    If Not StreamClosed() Then Stream.Close
 End Sub
 
 Sub PreFlight()
@@ -473,6 +473,9 @@ Sub Log(Optional Mensaje As String)
 Stream.WriteLine (Mensaje)
 End Sub
 
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa verdadero si el stream está cerrado (o es nothing)
+'----------------------------------------------------------------------------------------------------
 Function StreamClosed() As Boolean
     On Error GoTo IsClosed
     StreamClosed = Stream.AtEndOfLine
