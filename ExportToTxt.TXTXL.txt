@@ -9,10 +9,10 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 
+ * Líneas de código VB: 449
 
-----------------------------------------------------------------------------------------------------
-Detalle:
+Detalle
+=======
 
 Hojas:
  [Sheet1]
@@ -52,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 412 líneas de código.
+[ExportToTxt] 418 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -68,7 +68,7 @@ Private Const TOKEN_PRE_EXTENSION = ".TXTXL"
 Private Const TOKEN_EXTENSION = ".txt"
 
 Private Const TOKEN_HEADER = "Representación Textual del archivo de Excel: "
-Private Const TOKEN_SEPARATOR As String = "----------------------------------------------------------------------------------------------------" & vbCrLf & "Detalle:"
+Private Const TOKEN_SEPARATOR As String = "----------------------------------------------------------------------------------------------------"
 Private Const TOKEN_HOJAS_TITLE = "Hojas:"
 Private Const TOKEN_CONTENT_TITLE = "Contenido:"
 Private Const TOKEN_NOMBRES_TITLE = "Nombres:"
@@ -154,27 +154,23 @@ Sub GenResumen()
     Log "Resumen" & vbCrLf & "======="
     Log
     
-    ' - Numero de hojas.
     Dim NumeroHojas As Integer: NumeroHojas = GetNumHojas
     Log " * Hojas: " & NumeroHojas
     Log
     
-    ' - Número de Nombres Definidos.
     Dim NumeroNombresDefinidos As Integer: NumeroNombresDefinidos = GetNumNombres
     Log " * Nombres Definidos: " & NumeroNombresDefinidos
     Log
     
-    ' - Número de módulos VB.
     Dim NumeroModulosVB As Integer: NumeroModulosVB = GetNumModulosVB
     Log " * Módulos de Visual Basic: " & NumeroModulosVB
     Log
     
-    ' - Número de líneas de código totales (opcional).
-    Log " * Líneas de código VB: "
+    Dim NumeroLineasCodigo As Integer: NumeroLineasCodigo = GetNumLineas
+    Log " * Líneas de código VB: " & NumeroLineasCodigo
     Log
     
-    ' - Separador del detalle.
-    Log TOKEN_SEPARATOR
+    Log "Detalle" & vbCrLf & "======="
     Log
 End Sub
 
@@ -188,6 +184,16 @@ End Function
 
 Function GetNumModulosVB() As Integer
     GetNumModulosVB = BTE.VBProject.VBComponents.Count
+End Function
+
+Function GetNumLineas() As Integer
+    'Iteramos los componentes para contar las líneas.
+    Dim NumLineas As Integer
+    Dim vbc As vbcomponent
+    For Each vbc In BTE.VBProject.VBComponents
+        NumLineas = NumLineas + vbc.CodeModule.CountOfLines
+    Next
+    GetNumLineas = NumLineas
 End Function
 
 '====================================================================================================
