@@ -1,5 +1,13 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
 
+ * Hojas: 1
+
+ * Nombres Definidos: 
+
+ * Módulos de Visual Basic: 
+
+ * Líneas de código VB: 
+
 ----------------------------------------------------------------------------------------------------
 Detalle:
 
@@ -41,7 +49,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 372 líneas de código.
+[ExportToTxt] 388 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -115,7 +123,9 @@ On Error GoTo Catch
     GenHojas
     GenNombres
     GenModulos
+    
     EllapsedMinutes = FormatNumber(DateDiff("s", StartTime, Date + Time) / 60, 2)
+    
     Log "** Fin del proceso de exportación. Proceso realizado en " & EllapsedMinutes & " minutos. **"
     RestoreSettings
 Catch:
@@ -133,13 +143,27 @@ Sub GenResumen()
     ' - Nombre del archivo
     GenEncabezado
     ' - Numero de hojas.
+    Dim NumeroHojas As Integer
+    NumeroHojas = GetNumHojas
+    Log " * Hojas: " & NumeroHojas
+    Log
     ' - Número de Nombres Definidos.
+    Log " * Nombres Definidos: "
+    Log
     ' - Número de módulos VB.
+    Log " * Módulos de Visual Basic: "
+    Log
     ' - Número de líneas de código totales (opcional).
+    Log " * Líneas de código VB: "
+    Log
     ' - Separador del detalle.
     Log TOKEN_SEPARATOR
     Log
 End Sub
+
+Function GetNumHojas() As Integer
+    GetNumHojas = BTE.Worksheets.Count
+End Function
 
 Function GetTXTFileName() As String
     Dim NombreDelArchivo As String _
@@ -423,9 +447,11 @@ Option Explicit
 
 \\\--- END OF MODULE ---
 
-[Plantillas] 15 líneas de código.
+[Plantillas] 17 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
+
+Public ErrNum, ErrDesc 'Para que compile el proyecto.
 
 Sub PlantillaParaDelegado()
 On Error GoTo DelegateError
