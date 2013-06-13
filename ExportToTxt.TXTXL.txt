@@ -1,5 +1,5 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
-Fecha y hora de generación: 13/06/2013 03:21:50 p.m.
+Fecha y hora de generación: 13/06/2013 03:30:59 p.m.
 
 Resumen
 =======
@@ -139,6 +139,18 @@ Sub PreFlight()
     VBProjectIsProtected = BTE.VBProject.Protection = vbext_pp_locked
 End Sub
 
+Function GetTXTFileName() As String
+    Dim NombreDelArchivo As String _
+    , Ruta As String _
+    , NombreCompleto As String
+    
+    NombreDelArchivo = FSO.GetBaseName(BTE.name) & TOKEN_PRE_EXTENSION & TOKEN_EXTENSION
+    Ruta = BTE.Path
+    NombreCompleto = FSO.BuildPath(Ruta, NombreDelArchivo)
+    
+    GetTXTFileName = NombreCompleto
+End Function
+
 '----------------------------------------------------------------------------------------------------
 'Purpose: 'Despliega la confirmación visual inicial y regresa si se continúa o se cancela el proceso.
 '----------------------------------------------------------------------------------------------------
@@ -202,6 +214,12 @@ Sub GenResumen()
     Log
 End Sub
 
+Sub GenEncabezado()
+    Log TOKEN_HEADER & """" & BTE.name & """"
+    Log "Fecha y hora de generación: " & Date + Time
+    Log
+End Sub
+
 Function GetNumHojas() As Integer
     GetNumHojas = BTE.Worksheets.Count
 End Function
@@ -226,39 +244,21 @@ End Function
 
 '====================================================================================================
 
-Function GetTXTFileName() As String
-    Dim NombreDelArchivo As String _
-    , Ruta As String _
-    , NombreCompleto As String
-    
-    NombreDelArchivo = FSO.GetBaseName(BTE.name) & TOKEN_PRE_EXTENSION & TOKEN_EXTENSION
-    Ruta = BTE.Path
-    NombreCompleto = FSO.BuildPath(Ruta, NombreDelArchivo)
-    
-    GetTXTFileName = NombreCompleto
-End Function
-
-Sub GenEncabezado()
-Log TOKEN_HEADER & """" & BTE.name & """"
-Log "Fecha y hora de generación: " & Date + Time
-Log
-End Sub
-
 Sub GenHojas()
-'--- Lista de hojas
-Log TOKEN_HOJAS_TITLE
-IteraHojas "ImprimeNombreDeHoja"
-Log
-
-'--- Contenido de cada hoja
-Log TOKEN_CONTENT_TITLE
-IteraHojas "ProcesaContenidoDeHoja"
+    '--- Lista de hojas
+    Log TOKEN_HOJAS_TITLE
+    IteraHojas "ImprimeNombreDeHoja"
+    Log
+    
+    '--- Contenido de cada hoja
+    Log TOKEN_CONTENT_TITLE
+    IteraHojas "ProcesaContenidoDeHoja"
 End Sub
 
 Sub GenNombres()
-Log TOKEN_NOMBRES_TITLE
-IteraNombres "ImprimeNombre"
-Log
+    Log TOKEN_NOMBRES_TITLE
+    IteraNombres "ImprimeNombre"
+    Log
 End Sub
 
 Sub GenModulos()
@@ -469,12 +469,12 @@ End Function
 '====================================================================================================
 
 Sub Log(Optional Mensaje As String)
-'Debug.Print Mensaje
-Stream.WriteLine (Mensaje)
+    'Debug.Print Mensaje
+    Stream.WriteLine (Mensaje)
 End Sub
 
 '----------------------------------------------------------------------------------------------------
-'Purpose: Regresa verdadero si el stream está cerrado (o es nothing)
+'Purpose: Regresa verdadero si al intentar accesar el Stream, marca error. (Se asume que está cerrada)
 '----------------------------------------------------------------------------------------------------
 Function StreamClosed() As Boolean
     On Error GoTo IsClosed
