@@ -15,6 +15,7 @@ Módulos VBA:
  [Sheet1] Tipo: 100
  [ExportToTxt] Tipo: 1
  [ExportToTxtClass] Tipo: 2
+ [Plantillas] Tipo: 1
 
 Codigo:
 [ThisWorkbook] 12 líneas de código.
@@ -37,7 +38,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 355 líneas de código.
+[ExportToTxt] 343 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -381,6 +382,19 @@ Sub RestoreSettings()
     Application.EnableEvents = True
 End Sub
 
+
+\\\--- END OF MODULE ---
+
+[ExportToTxtClass] 2 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+\\\--- END OF MODULE ---
+
+[Plantillas] 15 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
 Sub PlantillaParaDelegado()
 On Error GoTo DelegateError
     'Código aquí.
@@ -394,12 +408,6 @@ Sub PlantillaParaLlamarADelegado()
     ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
     If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
 End Sub
-\\\--- END OF MODULE ---
-
-[ExportToTxtClass] 2 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
 \\\--- END OF MODULE ---
 
 
