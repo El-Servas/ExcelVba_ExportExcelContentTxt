@@ -1,10 +1,13 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
 
+Resumen
+=======
+
  * Hojas: 1
 
- * Nombres Definidos: 
+ * Nombres Definidos: 0
 
- * Módulos de Visual Basic: 
+ * Módulos de Visual Basic: 5
 
  * Líneas de código VB: 
 
@@ -49,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 388 líneas de código.
+[ExportToTxt] 412 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -138,24 +141,38 @@ Catch:
     Stream.Close
 End Sub
 
+'====================================================================================================
+'RESUMEN
+'====================================================================================================
+
 Sub GenResumen()
     'El resumen incluye:
+    
     ' - Nombre del archivo
     GenEncabezado
+    
+    Log "Resumen" & vbCrLf & "======="
+    Log
+    
     ' - Numero de hojas.
-    Dim NumeroHojas As Integer
-    NumeroHojas = GetNumHojas
+    Dim NumeroHojas As Integer: NumeroHojas = GetNumHojas
     Log " * Hojas: " & NumeroHojas
     Log
+    
     ' - Número de Nombres Definidos.
-    Log " * Nombres Definidos: "
+    Dim NumeroNombresDefinidos As Integer: NumeroNombresDefinidos = GetNumNombres
+    Log " * Nombres Definidos: " & NumeroNombresDefinidos
     Log
+    
     ' - Número de módulos VB.
-    Log " * Módulos de Visual Basic: "
+    Dim NumeroModulosVB As Integer: NumeroModulosVB = GetNumModulosVB
+    Log " * Módulos de Visual Basic: " & NumeroModulosVB
     Log
+    
     ' - Número de líneas de código totales (opcional).
     Log " * Líneas de código VB: "
     Log
+    
     ' - Separador del detalle.
     Log TOKEN_SEPARATOR
     Log
@@ -164,6 +181,16 @@ End Sub
 Function GetNumHojas() As Integer
     GetNumHojas = BTE.Worksheets.Count
 End Function
+
+Function GetNumNombres() As Integer
+    GetNumNombres = BTE.Names.Count
+End Function
+
+Function GetNumModulosVB() As Integer
+    GetNumModulosVB = BTE.VBProject.VBComponents.Count
+End Function
+
+'====================================================================================================
 
 Function GetTXTFileName() As String
     Dim NombreDelArchivo As String _
