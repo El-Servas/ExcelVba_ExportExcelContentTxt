@@ -1,0 +1,40 @@
+Representación Textual del archivo de Excel: "SampleBook 2 - Protected VBProject.xls"
+
+Resumen
+=======
+
+ * Hojas: 1
+
+ * Nombres Definidos: 3
+
+ El proyecto VB está protegido y no hay acceso a los módulos.
+
+Detalle
+=======
+
+Hojas:
+ [Sheet1]
+
+Contenido:
+[Sheet1]
+[A1] \Archivo de prueba con contenido, que va a usar la rutina ExportToTXT\
+[A3] \Algunas celdas con contenido:\
+[A4] \=RAND()\
+[A5] \=RAND()\
+[A6] \=RAND()\
+[B4] \=RAND()\
+[B5] \=RAND()\
+[B6] \=RAND()\
+[C4] \=RAND()\
+[C5] \=RAND()\
+[C6] \=RAND()\
+
+Nombres:
+ [Nombre1] =Sheet1!$A$4:$A$6
+ [Nombre2] =Sheet1!$B$4:$B$6
+ [Nombre3] =Sheet1!$C$4:$C$6
+
+Nombre del proyecto VB: [VBAProject]
+
+** No se pueden exportar las macros si el proyecto está protegido. **
+** Fin del proceso de exportación. Proceso realizado en 0.00 minutos. **
