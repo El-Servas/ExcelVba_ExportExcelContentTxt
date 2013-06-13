@@ -1,5 +1,8 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
 
+----------------------------------------------------------------------------------------------------
+Detalle:
+
 Hojas:
  [Sheet1]
 
@@ -38,7 +41,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 343 líneas de código.
+[ExportToTxt] 372 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -54,6 +57,7 @@ Private Const TOKEN_PRE_EXTENSION = ".TXTXL"
 Private Const TOKEN_EXTENSION = ".txt"
 
 Private Const TOKEN_HEADER = "Representación Textual del archivo de Excel: "
+Private Const TOKEN_SEPARATOR As String = "----------------------------------------------------------------------------------------------------" & vbCrLf & "Detalle:"
 Private Const TOKEN_HOJAS_TITLE = "Hojas:"
 Private Const TOKEN_CONTENT_TITLE = "Contenido:"
 Private Const TOKEN_NOMBRES_TITLE = "Nombres:"
@@ -106,7 +110,8 @@ On Error GoTo Catch
     SaveSettings
     StartTime = Date + Time
     
-    GenEncabezado
+    GenResumen
+    
     GenHojas
     GenNombres
     GenModulos
@@ -121,6 +126,19 @@ Catch:
         If Not StreamClosed() Then Log MensajeDeError
     End If
     Stream.Close
+End Sub
+
+Sub GenResumen()
+    'El resumen incluye:
+    ' - Nombre del archivo
+    GenEncabezado
+    ' - Numero de hojas.
+    ' - Número de Nombres Definidos.
+    ' - Número de módulos VB.
+    ' - Número de líneas de código totales (opcional).
+    ' - Separador del detalle.
+    Log TOKEN_SEPARATOR
+    Log
 End Sub
 
 Function GetTXTFileName() As String
@@ -175,6 +193,9 @@ Sub GenModulos()
     End If
 End Sub
 
+'MODULOS VB
+'====================================================================================================
+
 'Delegate
 Sub ProcesaModulo(vbcomp As vbcomponent, iterationIndex As Integer)
 On Error GoTo DelegateError
@@ -216,6 +237,9 @@ ErrorAccesandoVBProject: 'Si truena no hacemos nada.
     Exit Sub
 End Sub
 
+'RANGOS NOMBRADOS
+'====================================================================================================
+
 'Delegate
 Sub ImprimeNombre(name As name, iterationIndex As Integer)
 On Error GoTo DelegateError
@@ -235,6 +259,9 @@ Sub IteraNombres(DelegateName As String)
         If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
+
+'HOJAS
+'====================================================================================================
 
 'Delegate
 Sub ImprimeNombreDeHoja(sheet As Worksheet, iterationIndex As Integer)
@@ -295,6 +322,9 @@ Sub IteraHojas(DelegateName As String)
     Next
 End Sub
 
+'CELDAS
+'====================================================================================================
+
 'Delegate
 Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
 On Error GoTo DelegateError
@@ -328,14 +358,6 @@ DelegateError:
     ErrNum = Err.Number: ErrDesc = Err.Description
 End Function
 
-Function GetNameOfCell(cell As Range) As String
-    On Error GoTo NoName
-    GetNameOfCell = cell.name.name
-Exit Function
-NoName:
-    GetNameOfCell = ""
-End Function
-
 'Delegate caller
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
     Dim cell As Range, column As Range
@@ -349,6 +371,16 @@ Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
         DoEvents
     Next
 End Sub
+
+Function GetNameOfCell(cell As Range) As String
+    On Error GoTo NoName
+    GetNameOfCell = cell.name.name
+Exit Function
+NoName:
+    GetNameOfCell = ""
+End Function
+
+'====================================================================================================
 
 Sub Log(Optional Mensaje As String)
 'Debug.Print Mensaje
