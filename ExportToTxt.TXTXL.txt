@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 449
+ * Líneas de código VB: 456
 
 Detalle
 =======
@@ -52,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 418 líneas de código.
+[ExportToTxt] 425 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -82,14 +82,17 @@ Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
+Private VBProjectIsProtected As Boolean
 Private StartTime As Date _
         , EllapsedMinutes As String 'Para cronometrar el proceso.
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
 Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
-    Select Case MsgBox("Inicio del proceso de exportación a texto." _
-                       & vbCrLf & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." _
+    Set BTE = bookToExport
+    Select Case MsgBox("Inicio del proceso de exportación a texto del archivo:" _
+                       & vbCrLf & BTE.name _
+                       & vbCrLf & vbCrLf & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." _
                        & vbCrLf & "" _
                        , vbOKCancel Or vbInformation Or vbDefaultButton1, "Exportación a Texto")
     Case vbCancel
@@ -97,8 +100,8 @@ Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
         Exit Sub
     End Select
     
-    'Avisar si el proyecto de VB está protegido antes de proceder, y dar oportunidad de cancelar para desprotegerlo.
-    If bookToExport.VBProject.Protection = vbext_pp_locked Then
+    PreFlight
+    If VBProjectIsProtected Then
         Select Case MsgBox("Atención:" _
                            & vbCrLf & "El proyecto VB está protegido. No se exportarán las macros." _
                            & vbCrLf & "¿Continuar?" _
@@ -109,7 +112,7 @@ Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
         End Select
     End If
     
-    ExportToTxt bookToExport
+    ExportToTxt BTE
     
     Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
 End Sub
@@ -139,6 +142,10 @@ Catch:
         If Not StreamClosed() Then Log MensajeDeError
     End If
     Stream.Close
+End Sub
+
+Sub PreFlight()
+    VBProjectIsProtected = BTE.VBProject.Protection = vbext_pp_locked
 End Sub
 
 '====================================================================================================
