@@ -54,15 +54,15 @@ End Sub
 
 [ExportToTxt] 430 líneas de código.
 ///--- BEGINNING OF MODULE ---
+Option Explicit
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
 ' Author    : +
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
-' Version   : v2.7 - 2013-06-12.
 '---------------------------------------------------------------------------------------
-
-Option Explicit
+Private Const VERSION As String = "v2.7 - 2013-06-12"
+'---------------------------------------------------------------------------------------
 
 Private Const TOKEN_PRE_EXTENSION = ".TXTXL"
 Private Const TOKEN_EXTENSION = ".txt"
@@ -94,7 +94,7 @@ Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
     Select Case MsgBox("Inicio del proceso de exportación a texto del archivo:" _
                        & vbCrLf & BTE.name _
                        & vbCrLf & vbCrLf & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." _
-                       & vbCrLf & "" _
+                       & vbCrLf & vbCrLf & "Lib_ExportToTxt [ExportToTxt.xls] " & VERSION _
                        , vbOKCancel Or vbInformation Or vbDefaultButton1, "Exportación a Texto")
     Case vbCancel
         MensajeProcesoCancelado
