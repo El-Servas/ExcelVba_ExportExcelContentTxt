@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 456
+ * Líneas de código VB: 460
 
 Detalle
 =======
@@ -52,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 425 líneas de código.
+[ExportToTxt] 429 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : ExportToTxt
@@ -117,9 +117,9 @@ Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
     Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, "Exportación a Texto")
 End Sub
 Sub ExportToTxt(bookToExport As Workbook)
-    
 On Error GoTo Catch
     Set BTE = bookToExport
+    PreFlight
     Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
     SaveSettings
     StartTime = Date + Time
@@ -169,12 +169,16 @@ Sub GenResumen()
     Log " * Nombres Definidos: " & NumeroNombresDefinidos
     Log
     
-    Dim NumeroModulosVB As Integer: NumeroModulosVB = GetNumModulosVB
-    Log " * Módulos de Visual Basic: " & NumeroModulosVB
-    Log
-    
-    Dim NumeroLineasCodigo As Integer: NumeroLineasCodigo = GetNumLineas
-    Log " * Líneas de código VB: " & NumeroLineasCodigo
+    If Not VBProjectIsProtected Then
+        Dim NumeroModulosVB As Integer: NumeroModulosVB = GetNumModulosVB
+        Log " * Módulos de Visual Basic: " & NumeroModulosVB
+        Log
+        
+        Dim NumeroLineasCodigo As Integer: NumeroLineasCodigo = GetNumLineas
+        Log " * Líneas de código VB: " & NumeroLineasCodigo
+    Else
+        Log " El proyecto VB está protegido y no hay acceso a los módulos."
+    End If
     Log
     
     Log "Detalle" & vbCrLf & "======="
