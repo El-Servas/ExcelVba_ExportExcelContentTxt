@@ -27,7 +27,7 @@ Nombre del proyecto VB: [Lib_ExportToTxt]
 Módulos VBA:
  [ThisWorkbook] Tipo: 100
  [Sheet1] Tipo: 100
- [ExportToTxt] Tipo: 1
+ [Lib] Tipo: 1
  [ExportToTxtClass] Tipo: 2
  [Plantillas] Tipo: 1
 
@@ -39,7 +39,7 @@ Option Explicit
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
 
     'En caso de que se grabe éste libro, que es el que tiene el código, vamos a llamar directamente a la rutina:
-    ExportToTxt.ExportToTxt Me
+    Lib.Main Me
 
     'Para los demás libros, se debe de mandar llamar la rutina que dispare el proceso:
     'On Error Resume Next: Application.Run "Personal.xlsb!ExportToTxt.ExportToTxt", Me
@@ -52,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 463 líneas de código.
+[Lib] 463 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ Private StartTime As Date _
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
-Sub ExportToTxt(bookToExport As Workbook, Optional visual As Boolean = False)
+Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 On Error GoTo Catch
     Set BTE = bookToExport
     flVisual = visual
