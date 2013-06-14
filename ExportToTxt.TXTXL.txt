@@ -1,5 +1,4 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
-Fecha y hora de generación: 13/06/2013 03:42:43 p.m.
 
 Resumen
 =======
@@ -10,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 476
+ * Líneas de código VB: 494
 
 Detalle
 =======
@@ -28,7 +27,7 @@ Nombre del proyecto VB: [Lib_ExportToTxt]
 Módulos VBA:
  [ThisWorkbook] Tipo: 100
  [Sheet1] Tipo: 100
- [ExportToTxt] Tipo: 1
+ [Lib] Tipo: 1
  [ExportToTxtClass] Tipo: 2
  [Plantillas] Tipo: 1
 
@@ -40,7 +39,7 @@ Option Explicit
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
 
     'En caso de que se grabe éste libro, que es el que tiene el código, vamos a llamar directamente a la rutina:
-    ExportToTxt.ExportToTxt Me
+    Lib.Main Me
 
     'Para los demás libros, se debe de mandar llamar la rutina que dispare el proceso:
     'On Error Resume Next: Application.Run "Personal.xlsb!ExportToTxt.ExportToTxt", Me
@@ -53,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 445 líneas de código.
+[Lib] 463 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -62,7 +61,7 @@ Option Explicit
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
 '---------------------------------------------------------------------------------------
-Private Const VERSION As String = "v2.8 - 2013-06-13"
+Private Const VERSION As String = "v2.9 - 2013-06-14"
 '---------------------------------------------------------------------------------------
 Private Const LIB_NAME As String = "Lib_ExportToTxt"
 Private Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
@@ -96,10 +95,7 @@ Private StartTime As Date _
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
-Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
-    ExportToTxt bookToExport, True
-End Sub
-Sub ExportToTxt(bookToExport As Workbook, Optional visual As Boolean = False)
+Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 On Error GoTo Catch
     Set BTE = bookToExport
     flVisual = visual
@@ -117,9 +113,7 @@ On Error GoTo Catch
     GenNombres
     GenModulos
     
-    EllapsedMinutes = FormatNumber(DateDiff("s", StartTime, Date + Time) / 60, 2)
-    
-    Log "** Fin del proceso de exportación. Proceso realizado en " & EllapsedMinutes & " minutos. **"
+    MensajeFinal
     
     If flVisual Then Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
 Catch:
@@ -171,12 +165,19 @@ Function ConfirmarEjecucion() As Boolean
     End If
     
     'Pie del mensaje con el número de la versión.
-    MensajeConfirmacion = MensajeConfirmacion & "Lib_ExportToTxt [ExportToTxt.xls] " & VERSION
+    MensajeConfirmacion = MensajeConfirmacion & GenVersionString()
                    
     Select Case MsgBox(MensajeConfirmacion, vbOKCancel Or vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
     Case vbOK
         ConfirmarEjecucion = True
     End Select
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Construye un string que va a identificar la librería, el archivo que la contiene y la versión.
+'----------------------------------------------------------------------------------------------------
+Function GenVersionString() As String
+    GenVersionString = LIB_NAME & " [" & ThisWorkbook.name & "] " & VERSION
 End Function
 
 '====================================================================================================
@@ -216,7 +217,7 @@ End Sub
 
 Sub GenEncabezado()
     Log TOKEN_HEADER & """" & BTE.name & """"
-    Log "Fecha y hora de generación: " & Date + Time
+    If flVisual Then Log "Fecha y hora de generación: " & Date + Time
     Log
 End Sub
 
@@ -499,7 +500,23 @@ Sub RestoreSettings()
     Application.EnableEvents = True
 End Sub
 
-
+'----------------------------------------------------------------------------------------------------
+'Purpose: Construye y loguea el mensaje final. Incluye la duración del proceso si fue visual.
+'----------------------------------------------------------------------------------------------------
+Sub MensajeFinal()
+    Dim MensajeFinal As String
+    
+    'Calculamos el tiempo empleado
+    EllapsedMinutes = FormatNumber(DateDiff("s", StartTime, Date + Time) / 60, 2)
+    
+    'Construimos el mensaje.
+    MensajeFinal = "** Fin del proceso de exportación."
+    If flVisual Then MensajeFinal = MensajeFinal & " Proceso realizado en " & EllapsedMinutes & " minutos."
+    MensajeFinal = MensajeFinal & " **"
+    
+    Log MensajeFinal
+    Log GenVersionString()
+End Sub
 \\\--- END OF MODULE ---
 
 [ExportToTxtClass] 2 líneas de código.
@@ -530,4 +547,5 @@ End Sub
 \\\--- END OF MODULE ---
 
 
-** Fin del proceso de exportación. Proceso realizado en 0.00 minutos. **
+** Fin del proceso de exportación. **
+Lib_ExportToTxt [ExportToTxt.xls] v2.9 - 2013-06-14

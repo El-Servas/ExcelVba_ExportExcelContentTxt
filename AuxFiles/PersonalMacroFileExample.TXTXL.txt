@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 127
+ * Líneas de código VB: 128
 
 Detalle
 =======
@@ -46,7 +46,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[MyLibs] 36 líneas de código.
+[MyLibs] 37 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Module    : MyLibs
@@ -73,7 +73,8 @@ On Error GoTo ExportToTxt_Error
     BL.ErrNum = 0: BL.OpenLibBook ("ExportToTxt.xls")
     If BL.ErrNum <> 0 Then Err.Raise BL.ErrNum, , BL.ErrDesc
     
-    Application.Run "ExportToTxt.xls!ExportToTxt.ExportToTxt", book, visual
+    Application.Run "ExportToTxt.xls!Lib.Main", book, visual
+    'Application.Run BL.GetFunctionName, book, visual
 On Error GoTo 0
 Exit Sub
 ExportToTxt_Error:
@@ -180,4 +181,5 @@ End Sub
 \\\--- END OF MODULE ---
 
 
-** Fin del proceso de exportación. Proceso realizado en 0.00 minutos. **
+** Fin del proceso de exportación. **
+Lib_ExportToTxt [ExportToTxt.xls] POST v2.8 - 2013-06-13
