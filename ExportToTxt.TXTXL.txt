@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 486
+ * Líneas de código VB: 494
 
 Detalle
 =======
@@ -52,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 455 líneas de código.
+[ExportToTxt] 463 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -165,12 +165,19 @@ Function ConfirmarEjecucion() As Boolean
     End If
     
     'Pie del mensaje con el número de la versión.
-    MensajeConfirmacion = MensajeConfirmacion & "Lib_ExportToTxt [ExportToTxt.xls] " & VERSION
+    MensajeConfirmacion = MensajeConfirmacion & GenVersionString()
                    
     Select Case MsgBox(MensajeConfirmacion, vbOKCancel Or vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
     Case vbOK
         ConfirmarEjecucion = True
     End Select
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Construye un string que va a identificar la librería, el archivo que la contiene y la versión.
+'----------------------------------------------------------------------------------------------------
+Function GenVersionString() As String
+    GenVersionString = LIB_NAME & " [" & ThisWorkbook.name & "] " & VERSION
 End Function
 
 '====================================================================================================
@@ -508,6 +515,7 @@ Sub MensajeFinal()
     MensajeFinal = MensajeFinal & " **"
     
     Log MensajeFinal
+    Log GenVersionString()
 End Sub
 \\\--- END OF MODULE ---
 
@@ -540,3 +548,4 @@ End Sub
 
 
 ** Fin del proceso de exportación. **
+Lib_ExportToTxt [ExportToTxt.xls] POST v2.8 - 2013-06-13
