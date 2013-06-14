@@ -1,5 +1,5 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
-Fecha y hora de generación: 13/06/2013 03:42:43 p.m.
+Fecha y hora de generación: 14/06/2013 04:57:03 p.m.
 
 Resumen
 =======
@@ -10,7 +10,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 476
+ * Líneas de código VB: 473
 
 Detalle
 =======
@@ -53,7 +53,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 445 líneas de código.
+[ExportToTxt] 442 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ Option Explicit
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
 '---------------------------------------------------------------------------------------
-Private Const VERSION As String = "v2.8 - 2013-06-13"
+Private Const VERSION As String = "POST v2.8 - 2013-06-13"
 '---------------------------------------------------------------------------------------
 Private Const LIB_NAME As String = "Lib_ExportToTxt"
 Private Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
@@ -96,9 +96,6 @@ Private StartTime As Date _
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
-Sub ExportToTxtConConfirmacion(bookToExport As Workbook)
-    ExportToTxt bookToExport, True
-End Sub
 Sub ExportToTxt(bookToExport As Workbook, Optional visual As Boolean = False)
 On Error GoTo Catch
     Set BTE = bookToExport
