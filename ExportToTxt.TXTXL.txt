@@ -1,5 +1,4 @@
 Representación Textual del archivo de Excel: "ExportToTxt.xls"
-Fecha y hora de generación: 14/06/2013 04:57:03 p.m.
 
 Resumen
 =======
@@ -10,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 473
+ * Líneas de código VB: 486
 
 Detalle
 =======
@@ -53,7 +52,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[ExportToTxt] 442 líneas de código.
+[ExportToTxt] 455 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -114,9 +113,7 @@ On Error GoTo Catch
     GenNombres
     GenModulos
     
-    EllapsedMinutes = FormatNumber(DateDiff("s", StartTime, Date + Time) / 60, 2)
-    
-    Log "** Fin del proceso de exportación. Proceso realizado en " & EllapsedMinutes & " minutos. **"
+    MensajeFinal
     
     If flVisual Then Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
 Catch:
@@ -213,7 +210,7 @@ End Sub
 
 Sub GenEncabezado()
     Log TOKEN_HEADER & """" & BTE.name & """"
-    Log "Fecha y hora de generación: " & Date + Time
+    If flVisual Then Log "Fecha y hora de generación: " & Date + Time
     Log
 End Sub
 
@@ -496,7 +493,22 @@ Sub RestoreSettings()
     Application.EnableEvents = True
 End Sub
 
-
+'----------------------------------------------------------------------------------------------------
+'Purpose: Construye y loguea el mensaje final. Incluye la duración del proceso si fue visual.
+'----------------------------------------------------------------------------------------------------
+Sub MensajeFinal()
+    Dim MensajeFinal As String
+    
+    'Calculamos el tiempo empleado
+    EllapsedMinutes = FormatNumber(DateDiff("s", StartTime, Date + Time) / 60, 2)
+    
+    'Construimos el mensaje.
+    MensajeFinal = "** Fin del proceso de exportación."
+    If flVisual Then MensajeFinal = MensajeFinal & " Proceso realizado en " & EllapsedMinutes & " minutos."
+    MensajeFinal = MensajeFinal & " **"
+    
+    Log MensajeFinal
+End Sub
 \\\--- END OF MODULE ---
 
 [ExportToTxtClass] 2 líneas de código.
@@ -527,4 +539,4 @@ End Sub
 \\\--- END OF MODULE ---
 
 
-** Fin del proceso de exportación. Proceso realizado en 0.00 minutos. **
+** Fin del proceso de exportación. **
