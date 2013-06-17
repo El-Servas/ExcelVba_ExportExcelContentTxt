@@ -7,9 +7,9 @@ Resumen
 
  * Nombres Definidos: 0
 
- * Módulos de Visual Basic: 5
+ * Módulos de Visual Basic: 4
 
- * Líneas de código VB: 494
+ * Líneas de código VB: 525
 
 Detalle
 =======
@@ -28,7 +28,6 @@ Módulos VBA:
  [ThisWorkbook] Tipo: 100
  [Sheet1] Tipo: 100
  [Lib] Tipo: 1
- [ExportToTxtClass] Tipo: 2
  [Plantillas] Tipo: 1
 
 Codigo:
@@ -52,7 +51,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Lib] 463 líneas de código.
+[Lib] 496 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -61,7 +60,7 @@ Option Explicit
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
 '---------------------------------------------------------------------------------------
-Private Const VERSION As String = "v2.9 - 2013-06-14"
+Private Const VERSION As String = "v2.10 - 2013-06-17"
 '---------------------------------------------------------------------------------------
 Private Const LIB_NAME As String = "Lib_ExportToTxt"
 Private Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
@@ -74,15 +73,20 @@ Private Const TOKEN_SEPARATOR As String = "-------------------------------------
 Private Const TOKEN_HOJAS_TITLE = "Hojas:"
 Private Const TOKEN_CONTENT_TITLE = "Contenido:"
 Private Const TOKEN_NOMBRES_TITLE = "Nombres:"
-Private Const TOKEN_VBPROJECT_PROTECTED As String = "El proyecto VB está protegido y no hay acceso a los módulos."
 Private Const TOKEN_MODULOS_TITLE = "Módulos VBA:"
 Private Const TOKEN_CODIGO_TITLE = "Codigo:"
 Private Const TOKEN_MODULE_BEGINS = "///--- BEGINNING OF MODULE ---"
 Private Const TOKEN_MODULE_END = "\\\--- END OF MODULE ---"
 Private Const SHEET_TITLE_CELL_LISTING_THRESHOLD = 25 'El número de celdas entre la etiqueta de la hoja en el listado de celdas
+Private Const TOKEN_VBPROJECT_PROTECTED As String = "El proyecto VB está protegido y no hay acceso a los módulos."
+Private Const TOKEN_BOOK_IN_AUTOSTART As String = "El libro está en la ruta de auto-ejecución de Excel. No se exportará."
 
 Private Const TOKEN_MESSAGEBOX_TITLE As String = LIB_FRIENDLY_NAME
 Private Const ERROR_1 As String = "Proceso cancelado manualmente."
+Private Const ERROR_2 As String = TOKEN_BOOK_IN_AUTOSTART
+
+Private Const AUTO_START_PATH_PREFIX As String = "AppData"
+Private Const AUTO_START_PATH_SUFFIX As String = "Microsoft\Excel\XLSTART"
 
 Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
@@ -92,6 +96,9 @@ Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar
 Private VBProjectIsProtected As Boolean
 Private StartTime As Date _
         , EllapsedMinutes As String 'Para cronometrar el proceso.
+        
+Private ExpandedAutoStartPath As String
+Private flBookInAutoStartPath As Boolean
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
@@ -101,21 +108,25 @@ On Error GoTo Catch
     flVisual = visual
     PreFlight
    
+    'Inicio del proceso. Confirmación visual si aplica.
     If flVisual Then If Not ConfirmarEjecucion Then Err.Raise vbObjectError + 1, , ERROR_1
-
-    Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
-    SaveSettings
-    StartTime = Date + Time
     
-    GenResumen
+    If Not flBookInAutoStartPath Then
+        Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
+        SaveSettings
+        StartTime = Date + Time
+        
+        GenResumen
+        
+        GenHojas
+        GenNombres
+        GenModulos
+        
+        MensajeFinal
     
-    GenHojas
-    GenNombres
-    GenModulos
-    
-    MensajeFinal
-    
-    If flVisual Then Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
+        'Fin del proceso. Confirmación visual si aplica.
+        If flVisual Then Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
+    End If
 Catch:
     If Err.Number <> 0 Then
         Dim MensajeDeError As String
@@ -129,7 +140,20 @@ Catch:
     If Not Stream Is Nothing Then Stream.Close
 End Sub
 
+'----------------------------------------------------------------------------------------------------
+'Purpose: Realiza unas verificaciones antes de iniciar el proceso de exportación.
+'----------------------------------------------------------------------------------------------------
 Sub PreFlight()
+    'Construye y revisa la ruta de exclusión.
+    ExpandedAutoStartPath = FSO.BuildPath(Environ(AUTO_START_PATH_PREFIX), AUTO_START_PATH_SUFFIX)
+    If UCase(BTE.Path) = UCase(ExpandedAutoStartPath) Then
+        flBookInAutoStartPath = True
+        Debug.Print "El archivo a exportar está en la ruta AutoStart."
+    Else
+        flBookInAutoStartPath = False
+    End If
+    
+    'Ajusta la bandera si el proyecto de VB está protegido.
     VBProjectIsProtected = BTE.VBProject.Protection = vbext_pp_locked
 End Sub
 
@@ -157,12 +181,20 @@ Function ConfirmarEjecucion() As Boolean
         & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." & vbCrLf & vbCrLf
     
     MensajeConfirmacion = MensajeConfirmacion & "Verificación previa:" & vbCrLf
+    'Libro en la ruta AutoStart
+    If flBookInAutoStartPath Then
+        MensajeConfirmacion = MensajeConfirmacion & "* " & UCase(TOKEN_BOOK_IN_AUTOSTART) & vbCrLf
+    End If
+    
     'Estado de la protección del proyecto VB.
     If VBProjectIsProtected Then
-        MensajeConfirmacion = MensajeConfirmacion & "* " & UCase(TOKEN_VBPROJECT_PROTECTED) & vbCrLf & vbCrLf
+        MensajeConfirmacion = MensajeConfirmacion & "* " & UCase(TOKEN_VBPROJECT_PROTECTED) & vbCrLf
     Else
-        MensajeConfirmacion = MensajeConfirmacion & "* " & "El proyecto de Visual Basic es accesible." & vbCrLf & vbCrLf
+        MensajeConfirmacion = MensajeConfirmacion & "* " & "El proyecto de Visual Basic es accesible." & vbCrLf
     End If
+    
+    'Separador
+    MensajeConfirmacion = MensajeConfirmacion & vbCrLf
     
     'Pie del mensaje con el número de la versión.
     MensajeConfirmacion = MensajeConfirmacion & GenVersionString()
@@ -519,12 +551,6 @@ Sub MensajeFinal()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportToTxtClass] 2 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
-\\\--- END OF MODULE ---
-
 [Plantillas] 17 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
@@ -548,4 +574,4 @@ End Sub
 
 
 ** Fin del proceso de exportación. **
-Lib_ExportToTxt [ExportToTxt.xls] v2.9 - 2013-06-14
+Lib_ExportToTxt [ExportToTxt.xls] v2.10 - 2013-06-17
