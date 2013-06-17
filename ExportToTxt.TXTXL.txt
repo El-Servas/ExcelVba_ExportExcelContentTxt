@@ -7,9 +7,9 @@ Resumen
 
  * Nombres Definidos: 0
 
- * Módulos de Visual Basic: 5
+ * Módulos de Visual Basic: 4
 
- * Líneas de código VB: 494
+ * Líneas de código VB: 492
 
 Detalle
 =======
@@ -28,7 +28,6 @@ Módulos VBA:
  [ThisWorkbook] Tipo: 100
  [Sheet1] Tipo: 100
  [Lib] Tipo: 1
- [ExportToTxtClass] Tipo: 2
  [Plantillas] Tipo: 1
 
 Codigo:
@@ -517,12 +516,6 @@ Sub MensajeFinal()
     Log MensajeFinal
     Log GenVersionString()
 End Sub
-\\\--- END OF MODULE ---
-
-[ExportToTxtClass] 2 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
 \\\--- END OF MODULE ---
 
 [Plantillas] 17 líneas de código.
