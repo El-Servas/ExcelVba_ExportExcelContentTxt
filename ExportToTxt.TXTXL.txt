@@ -60,7 +60,7 @@ Option Explicit
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
 '---------------------------------------------------------------------------------------
-Private Const VERSION As String = "v2.10 - 2013-06-17"
+Private Const VERSION As String = "POST v2.10 - 2013-06-17"
 '---------------------------------------------------------------------------------------
 Private Const LIB_NAME As String = "Lib_ExportToTxt"
 Private Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
@@ -574,4 +574,4 @@ End Sub
 
 
 ** Fin del proceso de exportación. **
-Lib_ExportToTxt [ExportToTxt.xls] v2.10 - 2013-06-17
+Lib_ExportToTxt [ExportToTxt.xls] POST v2.10 - 2013-06-17
