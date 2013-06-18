@@ -46,7 +46,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Lib] 12 líneas de código.
+[Lib] 16 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -55,6 +55,10 @@ Option Explicit
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
 '---------------------------------------------------------------------------------------
+Public Const VERSION As String = "POST v2.10 - 2013-06-17"
+'---------------------------------------------------------------------------------------
+Public Const LIB_NAME As String = "Lib_ExportToTxt"
+Public Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
 
 Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
     Dim Exporter As New ExportClass
@@ -83,7 +87,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 498 líneas de código.
+[ExportClass] 494 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -92,10 +96,6 @@ Option Explicit
 ' Date      : 18/06/2013
 ' Purpose   : Encapsula la funcionalidad de la exportación.
 '---------------------------------------------------------------------------------------
-Private Const VERSION As String = "POST v2.10 - 2013-06-17"
-'---------------------------------------------------------------------------------------
-Private Const LIB_NAME As String = "Lib_ExportToTxt"
-Private Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
 
 Private Const TOKEN_PRE_EXTENSION = ".TXTXL"
 Private Const TOKEN_EXTENSION = ".txt"
