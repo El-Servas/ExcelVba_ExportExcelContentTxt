@@ -7,9 +7,9 @@ Resumen
 
  * Nombres Definidos: 0
 
- * Módulos de Visual Basic: 4
+ * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 525
+ * Líneas de código VB: 533
 
 Detalle
 =======
@@ -29,20 +29,15 @@ Módulos VBA:
  [Sheet1] Tipo: 100
  [Lib] Tipo: 1
  [Plantillas] Tipo: 1
+ [ExportClass] Tipo: 2
 
 Codigo:
-[ThisWorkbook] 12 líneas de código.
+[ThisWorkbook] 6 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-
-    'En caso de que se grabe éste libro, que es el que tiene el código, vamos a llamar directamente a la rutina:
-    Lib.Main Me
-
-    'Para los demás libros, se debe de mandar llamar la rutina que dispare el proceso:
-    'On Error Resume Next: Application.Run "Personal.xlsb!ExportToTxt.ExportToTxt", Me
-
+    Lib.Main ThisWorkbook
 End Sub
 
 \\\--- END OF MODULE ---
@@ -51,14 +46,51 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Lib] 496 líneas de código.
+[Lib] 12 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
-' Module    : ExportToTxt
+' Module    : Lib
 ' Author    : +
 ' Date      : 05/06/2013
 ' Purpose   : Exporta una representación textual de un libro de Excel
+'---------------------------------------------------------------------------------------
+
+Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
+    Dim Exporter As New ExportClass
+    Exporter.Main bookToExport, visual
+End Sub
+\\\--- END OF MODULE ---
+
+[Plantillas] 17 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Public ErrNum, ErrDesc 'Para que compile el proyecto.
+
+Sub PlantillaParaDelegado()
+On Error GoTo DelegateError
+    'Código aquí.
+    'Si el delegado regresa valor, es buena idea asignarlo de inmediato, si se tiene un valor default.
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description 'ErrNum y ErrDesc deben de estar definidas a nivel módulo.
+End Sub
+
+Sub PlantillaParaLlamarADelegado()
+    'ErrNum y ErrDesc deben de estar definidas y accesibles en el módulo donde esté el delegado (Si fuera otro)
+    ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
+    If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
+End Sub
+\\\--- END OF MODULE ---
+
+[ExportClass] 498 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+'---------------------------------------------------------------------------------------
+' Module    : ExportClass
+' Author    : +
+' Date      : 18/06/2013
+' Purpose   : Encapsula la funcionalidad de la exportación.
 '---------------------------------------------------------------------------------------
 Private Const VERSION As String = "POST v2.10 - 2013-06-17"
 '---------------------------------------------------------------------------------------
@@ -349,7 +381,7 @@ Sub IteraModulos(DelegateName As String)
     On Error GoTo ErrorAccesandoVBProject
     For Each vbcomponent In BTE.VBProject.VBComponents
         ix = ix + 1
-        ErrNum = 0: Application.Run DelegateName, vbcomponent, ix
+        ErrNum = 0: CallByName Me, DelegateName, VbMethod, vbcomponent, ix
         If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 ErrorAccesandoVBProject: 'Si truena no hacemos nada.
@@ -374,7 +406,7 @@ Sub IteraNombres(DelegateName As String)
     ix = 0
     For Each name In BTE.Names
         ix = ix + 1
-        ErrNum = 0: Application.Run DelegateName, name, ix
+        ErrNum = 0: CallByName Me, DelegateName, VbMethod, name, ix
         If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
@@ -436,7 +468,7 @@ Sub IteraHojas(DelegateName As String)
     ix = 0
     For Each sheet In BTE.Worksheets
         ix = ix + 1
-        ErrNum = 0: Application.Run DelegateName, sheet, ix
+        ErrNum = 0: CallByName Me, DelegateName, VbMethod, sheet, ix
         If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
@@ -484,7 +516,7 @@ Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
     ix = 0
     For Each column In sheet.UsedRange.Cells.Columns
         For Each cell In column.Cells
-            ErrNum = 0: ix = Application.Run(DelegateName, cell, ix)
+            ErrNum = 0: ix = CallByName(Me, DelegateName, VbMethod, cell, ix)
             If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
         Next
         DoEvents
@@ -549,27 +581,8 @@ Sub MensajeFinal()
     Log MensajeFinal
     Log GenVersionString()
 End Sub
-\\\--- END OF MODULE ---
 
-[Plantillas] 17 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
 
-Public ErrNum, ErrDesc 'Para que compile el proyecto.
-
-Sub PlantillaParaDelegado()
-On Error GoTo DelegateError
-    'Código aquí.
-    'Si el delegado regresa valor, es buena idea asignarlo de inmediato, si se tiene un valor default.
-DelegateError:
-    ErrNum = Err.Number: ErrDesc = Err.Description 'ErrNum y ErrDesc deben de estar definidas a nivel módulo.
-End Sub
-
-Sub PlantillaParaLlamarADelegado()
-    'ErrNum y ErrDesc deben de estar definidas y accesibles en el módulo donde esté el delegado (Si fuera otro)
-    ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
-    If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
-End Sub
 \\\--- END OF MODULE ---
 
 
