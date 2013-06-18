@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 533
+ * Líneas de código VB: 537
 
 Detalle
 =======
@@ -87,7 +87,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 494 líneas de código.
+[ExportClass] 498 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -120,6 +120,7 @@ Private Const ERROR_2 As String = TOKEN_BOOK_IN_AUTOSTART
 Private Const AUTO_START_PATH_PREFIX As String = "AppData"
 Private Const AUTO_START_PATH_SUFFIX As String = "Microsoft\Excel\XLSTART"
 
+Private RH 'La clase RunHelper.
 Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 Private flVisual As Boolean 'Bandera que define si la ejecución es con confirmación visual.
@@ -133,6 +134,11 @@ Private ExpandedAutoStartPath As String
 Private flBookInAutoStartPath As Boolean
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
+
+Private Sub Class_Initialize()
+    Set RH = Application.Run("Personal.xlsb!GetRunHelper")
+    Set FSO = RH.GetUtils().GetFSO()
+End Sub
 
 Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 On Error GoTo Catch
@@ -581,8 +587,6 @@ Sub MensajeFinal()
     Log MensajeFinal
     Log GenVersionString()
 End Sub
-
-
 \\\--- END OF MODULE ---
 
 
