@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 537
+ * Líneas de código VB: 557
 
 Detalle
 =======
@@ -29,7 +29,7 @@ Módulos VBA:
  [Sheet1] Tipo: 100
  [Lib] Tipo: 1
  [Plantillas] Tipo: 1
- [ExportClass] Tipo: 2
+ [LibClass] Tipo: 2
 
 Codigo:
 [ThisWorkbook] 6 líneas de código.
@@ -37,7 +37,7 @@ Codigo:
 Option Explicit
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-    Lib.Main ThisWorkbook
+Lib.Main ThisWorkbook
 End Sub
 
 \\\--- END OF MODULE ---
@@ -46,24 +46,44 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Lib] 16 líneas de código.
+[Lib] 36 líneas de código.
 ///--- BEGINNING OF MODULE ---
+'---------------------------------------------------------------------------------------
+' Librería: Exporta una representación textual de un libro de Excel
+'---------------------------------------------------------------------------------------
+
 Option Explicit
-'---------------------------------------------------------------------------------------
-' Module    : Lib
-' Author    : +
-' Date      : 05/06/2013
-' Purpose   : Exporta una representación textual de un libro de Excel
-'---------------------------------------------------------------------------------------
 Public Const VERSION As String = "POST v2.10 - 2013-06-17"
 '---------------------------------------------------------------------------------------
 Public Const LIB_NAME As String = "Lib_ExportToTxt"
 Public Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
 
+Public ErrNum, ErrDesc
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Punto de entrada principal a la librería.
+'----------------------------------------------------------------------------------------------------
 Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
-    Dim Exporter As New ExportClass
+    Dim Exporter As New LibClass
     Exporter.Main bookToExport, visual
 End Sub
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa el objeto real de librería
+'----------------------------------------------------------------------------------------------------
+Public Function GetLib()
+Debug.Print "> Inicio Lib.GetLib()"
+On Error GoTo Outer_Error
+
+    Set GetLib = New LibClass
+On Error GoTo 0
+Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
+    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!Lib.GetLib] " & Err.Number & ". " & Err.Description
+    Debug.Print "> Fin Lib.GetLib()": Debug.Print
+    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
+    ErrNum = Err.Number: ErrDesc = Err.Description
+End Function
+
 \\\--- END OF MODULE ---
 
 [Plantillas] 17 líneas de código.
@@ -87,7 +107,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 498 líneas de código.
+[LibClass] 498 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
