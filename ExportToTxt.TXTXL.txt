@@ -7,9 +7,9 @@ Resumen
 
  * Nombres Definidos: 0
 
- * Módulos de Visual Basic: 4
+ * Módulos de Visual Basic: 6
 
- * Líneas de código VB: 525
+ * Líneas de código VB: 773
 
 Detalle
 =======
@@ -29,20 +29,16 @@ Módulos VBA:
  [Sheet1] Tipo: 100
  [Lib] Tipo: 1
  [Plantillas] Tipo: 1
+ [ExportClass] Tipo: 2
+ [LibClass] Tipo: 2
 
 Codigo:
-[ThisWorkbook] 12 líneas de código.
+[ThisWorkbook] 6 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-
-    'En caso de que se grabe éste libro, que es el que tiene el código, vamos a llamar directamente a la rutina:
-    Lib.Main Me
-
-    'Para los demás libros, se debe de mandar llamar la rutina que dispare el proceso:
-    'On Error Resume Next: Application.Run "Personal.xlsb!ExportToTxt.ExportToTxt", Me
-
+Lib.Main ThisWorkbook
 End Sub
 
 \\\--- END OF MODULE ---
@@ -51,19 +47,76 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Lib] 496 líneas de código.
+[Lib] 36 líneas de código.
+///--- BEGINNING OF MODULE ---
+'---------------------------------------------------------------------------------------
+' Librería: Exporta una representación textual de un libro de Excel
+'---------------------------------------------------------------------------------------
+
+Option Explicit
+Public Const VERSION As String = "v2.11 - 2013-06-20"
+'---------------------------------------------------------------------------------------
+Public Const LIB_NAME As String = "Lib_ExportToTxt"
+Public Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
+
+Public ErrNum, ErrDesc
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Punto de entrada principal a la librería.
+'----------------------------------------------------------------------------------------------------
+Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
+    Dim Exporter As New ExportClass
+    Exporter.Main bookToExport, visual
+End Sub
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa el objeto real de librería
+'----------------------------------------------------------------------------------------------------
+Public Function GetLib()
+Debug.Print "> Inicio Lib.GetLib()"
+On Error GoTo Outer_Error
+
+    Set GetLib = New LibClass
+On Error GoTo 0
+Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
+    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!Lib.GetLib] " & Err.Number & ". " & Err.Description
+    Debug.Print "> Fin Lib.GetLib()": Debug.Print
+    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
+    ErrNum = Err.Number: ErrDesc = Err.Description
+End Function
+
+\\\--- END OF MODULE ---
+
+[Plantillas] 17 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Public ErrNum, ErrDesc 'Para que compile el proyecto.
+
+Sub PlantillaParaDelegado()
+On Error GoTo DelegateError
+    'Código aquí.
+    'Si el delegado regresa valor, es buena idea asignarlo de inmediato, si se tiene un valor default.
+DelegateError:
+    ErrNum = Err.Number: ErrDesc = Err.Description 'ErrNum y ErrDesc deben de estar definidas a nivel módulo.
+End Sub
+
+Sub PlantillaParaLlamarADelegado()
+    'ErrNum y ErrDesc deben de estar definidas y accesibles en el módulo donde esté el delegado (Si fuera otro)
+    ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
+    If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
+End Sub
+\\\--- END OF MODULE ---
+
+[ExportClass] 696 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
-' Module    : ExportToTxt
+' Module    : ExportClass
 ' Author    : +
-' Date      : 05/06/2013
-' Purpose   : Exporta una representación textual de un libro de Excel
+' Date      : 18/06/2013
+' Purpose   : Encapsula la funcionalidad de la exportación.
 '---------------------------------------------------------------------------------------
-Private Const VERSION As String = "v2.10 - 2013-06-17"
-'---------------------------------------------------------------------------------------
-Private Const LIB_NAME As String = "Lib_ExportToTxt"
-Private Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
 
 Private Const TOKEN_PRE_EXTENSION = ".TXTXL"
 Private Const TOKEN_EXTENSION = ".txt"
@@ -88,6 +141,7 @@ Private Const ERROR_2 As String = TOKEN_BOOK_IN_AUTOSTART
 Private Const AUTO_START_PATH_PREFIX As String = "AppData"
 Private Const AUTO_START_PATH_SUFFIX As String = "Microsoft\Excel\XLSTART"
 
+Private RH 'La clase RunHelper.
 Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
 Private flVisual As Boolean 'Bandera que define si la ejecución es con confirmación visual.
@@ -101,6 +155,11 @@ Private ExpandedAutoStartPath As String
 Private flBookInAutoStartPath As Boolean
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
+
+Private Sub Class_Initialize()
+    Set RH = Application.Run("Personal.xlsb!GetRunHelper")
+    Set FSO = RH.GetUtils().GetFSO()
+End Sub
 
 Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 On Error GoTo Catch
@@ -349,7 +408,7 @@ Sub IteraModulos(DelegateName As String)
     On Error GoTo ErrorAccesandoVBProject
     For Each vbcomponent In BTE.VBProject.VBComponents
         ix = ix + 1
-        ErrNum = 0: Application.Run DelegateName, vbcomponent, ix
+        ErrNum = 0: CallByName Me, DelegateName, VbMethod, vbcomponent, ix
         If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 ErrorAccesandoVBProject: 'Si truena no hacemos nada.
@@ -374,7 +433,7 @@ Sub IteraNombres(DelegateName As String)
     ix = 0
     For Each name In BTE.Names
         ix = ix + 1
-        ErrNum = 0: Application.Run DelegateName, name, ix
+        ErrNum = 0: CallByName Me, DelegateName, VbMethod, name, ix
         If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
@@ -436,7 +495,7 @@ Sub IteraHojas(DelegateName As String)
     ix = 0
     For Each sheet In BTE.Worksheets
         ix = ix + 1
-        ErrNum = 0: Application.Run DelegateName, sheet, ix
+        ErrNum = 0: CallByName Me, DelegateName, VbMethod, sheet, ix
         If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
     Next
 End Sub
@@ -471,6 +530,13 @@ On Error GoTo DelegateError
         NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
         Contenido = "\" & Contenido & "\"
         Log Direccion & NombreDefinido & Contenido
+        
+        'Reportamos si la celda tiene DV o no:
+        If CellHasValidation(cell) Then
+            Log GetDVInfo(cell)
+            Log
+        End If
+        
         ProcesaCelda = iterationIndex + 1
     End If
 DelegateError:
@@ -484,7 +550,7 @@ Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
     ix = 0
     For Each column In sheet.UsedRange.Cells.Columns
         For Each cell In column.Cells
-            ErrNum = 0: ix = Application.Run(DelegateName, cell, ix)
+            ErrNum = 0: ix = CallByName(Me, DelegateName, VbMethod, cell, ix)
             If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
         Next
         DoEvents
@@ -549,29 +615,221 @@ Sub MensajeFinal()
     Log MensajeFinal
     Log GenVersionString()
 End Sub
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Verdadero si la celda tiene Data Validation asociada.
+'----------------------------------------------------------------------------------------------------
+Private Function CellHasValidation(cell As Range) As Boolean
+On Error GoTo NoValidation
+    Dim dummy As XlDVType
+    dummy = cell.Validation.Type
+    CellHasValidation = True
+Exit Function
+NoValidation:
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa el XlDVType de una celda.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVType(cell As Range) As Long
+    If Not CellHasValidation(cell) Then
+        GetDVType = 0
+    Else
+        GetDVType = cell.Validation.Type
+    End If
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa el nombre del tipo de la enumeración XlDVType
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVTypeName(value As XlDVType) As String
+    Dim Res As String
+    Select Case value
+    Case xlValidateInputOnly
+        Res = "InputOnly"
+    Case xlValidateWholeNumber
+        Res = "Número Entero"
+    Case xlValidateDecimal
+        Res = "Decimal"
+    Case xlValidateList
+        Res = "Lista"
+    Case xlValidateDate
+        Res = "Fecha"
+    Case xlValidateTime
+        Res = "Hora"
+    Case xlValidateTextLength
+        Res = "Longitud del texto"
+    Case xlValidateCustom
+        Res = "Personalizada"
+    End Select
+    GetDVTypeName = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Reune la información relevante de la data validation y lo regresa como un string para ser exportado.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVInfo(cell As Range) As String
+    Dim Res As String
+    Dim Prefijo As String: Prefijo = " DataValidation: "
+    Dim DVType As Long: DVType = GetDVType(cell)
+    
+    If DVType <> xlValidateInputOnly Then
+        Prefijo = Prefijo & GetDVTypeName(DVType)
+        
+        Select Case DVType
+        Case XlDVType.xlValidateList '3
+            Prefijo = Prefijo & ". [" & GetDVListInfo(cell.Validation) & "]"
+            
+        Case XlDVType.xlValidateCustom '7
+            Prefijo = Prefijo & ". [" & GetDVCustomTypeInfo(cell.Validation) & "]"
+            
+        Case Else
+            Prefijo = Prefijo & ". [" & GetDVSharedTypesInfo(cell.Validation) & "]"
+            
+        End Select
+        
+        Res = Prefijo
+        Res = Res & vbCrLf
+        
+        Res = Res & " " & GetDVGeneralInfo(cell.Validation)
+    End If
+    
+    GetDVInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa un string con la información compartida entre algunos tipos de validación
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVSharedTypesInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Operador:""" & GetDVOperatorName(valob.operator) & """ "
+    Res = Res & "Formula1:" & valob.Formula1 & " "
+    If valob.Formula2 <> "" Then Res = Res & "Formula2:" & valob.Formula2 & " "
+    GetDVSharedTypesInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa un string con la información de validación específica del tipo Lista.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVListInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Fuente:" & valob.Formula1 & " "
+    Res = Res & "ListaEnCelda:" & valob.InCellDropdown & " "
+    GetDVListInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa un string con la información de validación específica del tipo Custom.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVCustomTypeInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Formula:" & valob.Formula1 & " "
+    GetDVCustomTypeInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Arma el string con las propiedades generales de todos los tipos de validación.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVGeneralInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Mensaje=[" & GetDVInputInfo(valob) & "] "
+    Res = Res & vbCrLf & " "
+    
+    Res = Res & "Advertencia=[" & GetDVAlertInfo(valob) & "] "
+    Res = Res & vbCrLf & " "
+    
+    Res = Res & "OmitirBlancos:" & valob.IgnoreBlank & " "
+    Res = Res & "DatoActualEsVálido:" & valob.value & " "
+    GetDVGeneralInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Construye y regresa un string con la información del mensaje del objeto de validación.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVInputInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Mostrar:" & valob.ShowInput & " "
+    Res = Res & "Titulo:""" & valob.InputTitle & """ "
+    Res = Res & "Mensaje:""" & Replace(valob.InputMessage, vbLf, "/") & """ "
+    GetDVInputInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Construye y regresa un string con la información de la alerta del objeto de validación.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVAlertInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Mostrar:" & valob.ShowError & " "
+    Res = Res & "Titulo:""" & valob.ErrorTitle & """ "
+    Res = Res & "Mensaje:""" & Replace(valob.ErrorMessage, vbLf, "/") & """ "
+    Res = Res & "Estilo:" & GetAlertStyleName(valob.alertStyle) & " "
+    GetDVAlertInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa el nombre del tipo de la enum XlDVAlertStyle
+'----------------------------------------------------------------------------------------------------
+Private Function GetAlertStyleName(style As XlDVAlertStyle) As String
+    Dim Res As String
+    Select Case style
+    Case xlValidAlertStop
+        Res = "Límite"
+    Case xlValidAlertWarning
+        Res = "Advertencia"
+    Case xlValidAlertInformation
+        Res = "Información."
+    End Select
+    GetAlertStyleName = Res
+End Function
+
+Private Function GetDVOperatorName(operator As Long) As String
+    Dim Res As String
+    Select Case operator
+    Case 1
+        Res = "Entre"
+    Case 2
+        Res = "No está entre"
+    Case 3
+        Res = "Igual a"
+    Case 4
+        Res = "No igual a"
+    Case 5
+        Res = "Mayor que"
+    Case 6
+        Res = "Menor que"
+    Case 7
+        Res = "Mayor o igual que"
+    Case 8
+        Res = "Menor o igual que"
+    Case Else
+        Res = "Desconocido"
+    End Select
+    GetDVOperatorName = Res
+End Function
 \\\--- END OF MODULE ---
 
-[Plantillas] 17 líneas de código.
+[LibClass] 18 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
-Public ErrNum, ErrDesc 'Para que compile el proyecto.
+Public ErrNum, ErrDesc
 
-Sub PlantillaParaDelegado()
-On Error GoTo DelegateError
-    'Código aquí.
-    'Si el delegado regresa valor, es buena idea asignarlo de inmediato, si se tiene un valor default.
-DelegateError:
-    ErrNum = Err.Number: ErrDesc = Err.Description 'ErrNum y ErrDesc deben de estar definidas a nivel módulo.
-End Sub
+Public Function Init() As Object
+Debug.Print "> Inicio LibClass.Init()"
+On Error GoTo Outer_Error
 
-Sub PlantillaParaLlamarADelegado()
-    'ErrNum y ErrDesc deben de estar definidas y accesibles en el módulo donde esté el delegado (Si fuera otro)
-    ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
-    If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
-End Sub
+    'Set Init = Me
+    Set Init = New ExportClass
+On Error GoTo 0
+Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
+    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!LibClass.Init] " & Err.Number & ". " & Err.Description
+    Debug.Print "> Fin LibClass.Init()": Debug.Print
+    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
+    ErrNum = Err.Number: ErrDesc = Err.Description
+End Function
+
 \\\--- END OF MODULE ---
 
 
 ** Fin del proceso de exportación. **
-Lib_ExportToTxt [ExportToTxt.xls] v2.10 - 2013-06-17
+Lib_ExportToTxt [ExportToTxt.xls] v2.11 - 2013-06-20
