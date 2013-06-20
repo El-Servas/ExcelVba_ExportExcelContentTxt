@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 6
 
- * Líneas de código VB: 644
+ * Líneas de código VB: 694
 
 Detalle
 =======
@@ -37,22 +37,34 @@ Contenido:
 [B9] \7\
 [C2] \valor\
 [C3] \0\
- * Celda CON DV: xlValidateWholeNumber
+ DV: WholeNumber
 
-[C4] \1\
- * Celda CON DV: xlValidateDecimal
+[C4] \0.5\
+ DV: Decimal
 
 [C5] \xlValidateInputOnly\
- * Celda CON DV: xlValidateList
+ DV: List. Fuente:=$A$2:$A$9 ListaEnCelda:True 
+ IgnorarVacios:False 
+ Mensaje=[Mostrar:True Titulo:"Validación Chidita" Mensaje:"Por favor:/Introduzca un valor correcto." ] 
+ Advertencia=[Mostrar:True Titulo:"Error en validación" Mensaje:"El dato introducido no es válido./Favor de verificarlo." ] 
 
-[C6] \No Validation\
-[C7] \No Validation\
+[C6] \=TODAY()\
+ DV: Date
+
+[C7] \=TIME(1,0,0)\
+ DV: Time
+
 [C8] \A\
- * Celda CON DV: xlValidateTextLength
+ DV: TextLength
 
 [C9] \d\
- * Celda CON DV: xlValidateCustom
+ DV: Custom
 
+[F6] \=DATE(2012,6,20)\
+[Sheet1]
+[F7] \0.0416666666666667\
+[G6] \=DATE(2014,6,20)\
+[G7] \0.958333333333333\
 
 Nombres:
 
@@ -142,7 +154,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 567 líneas de código.
+[ExportClass] 617 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -666,11 +678,14 @@ End Function
 'Purpose: Reune la información relevante de la data validation y lo regresa como un string para ser exportado.
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVInfo(cell As Range) As String
-    Select Case GetDVType(cell)
-    Case 0
-        GetDVInfo = " * Celda sin DV"
+    Dim DVType As Long: DVType = GetDVType(cell)
+    Select Case DVType
+    Case XlDVType.xlValidateInputOnly '0
+        GetDVInfo = " No DV."
+    Case XlDVType.xlValidateList '3
+        GetDVInfo = " DV: " & GetDVTypeName(DVType) & ". " & GetDVListInfo(cell.Validation)
     Case Else
-        GetDVInfo = " * Celda CON DV: " & GetDVTypeName(GetDVType(cell))
+        GetDVInfo = " DV: " & GetDVTypeName(DVType)
     End Select
 End Function
 
@@ -692,23 +707,70 @@ Private Function GetDVTypeName(value As XlDVType) As String
     Dim Res As String
     Select Case value
         Case xlValidateInputOnly
-            Res = "xlValidateInputOnly"
+            Res = "InputOnly"
         Case xlValidateWholeNumber
-            Res = "xlValidateWholeNumber"
+            Res = "WholeNumber"
         Case xlValidateDecimal
-            Res = "xlValidateDecimal"
+            Res = "Decimal"
         Case xlValidateList
-            Res = "xlValidateList"
+            Res = "List"
         Case xlValidateDate
-            Res = "xlValidateDate"
+            Res = "Date"
         Case xlValidateTime
-            Res = "xlValidateTime"
+            Res = "Time"
         Case xlValidateTextLength
-            Res = "xlValidateTextLength"
+            Res = "TextLength"
         Case xlValidateCustom
-            Res = "xlValidateCustom"
+            Res = "Custom"
     End Select
     GetDVTypeName = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa un string con la información de validación de tipo lista.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVListInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Fuente:" & valob.Formula1 & " "
+    Res = Res & "ListaEnCelda:" & valob.InCellDropdown & " "
+    Res = Res & vbCrLf & " "
+    Res = Res & GetDVGeneralInfo(valob)
+    GetDVListInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Arma el string con las propiedades generales de todos los tipos de validación.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVGeneralInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "IgnorarVacios:" & valob.IgnoreBlank & " "
+    Res = Res & vbCrLf & " "
+    Res = Res & "Mensaje=[" & GetDVInputInfo(valob) & "] "
+    Res = Res & vbCrLf & " "
+    Res = Res & "Advertencia=[" & GetDVAlertInfo(valob) & "] "
+    GetDVGeneralInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Construye y regresa un string con la información del mensaje del objeto de validación.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVInputInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Mostrar:" & valob.ShowInput & " "
+    Res = Res & "Titulo:""" & valob.InputTitle & """ "
+    Res = Res & "Mensaje:""" & Replace(valob.InputMessage, vbLf, "/") & """ "
+    GetDVInputInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Construye y regresa un string con la información de la alerta del objeto de validación.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVAlertInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Mostrar:" & valob.ShowError & " "
+    Res = Res & "Titulo:""" & valob.ErrorTitle & """ "
+    Res = Res & "Mensaje:""" & Replace(valob.ErrorMessage, vbLf, "/") & """ "
+    GetDVAlertInfo = Res
 End Function
 
 \\\--- END OF MODULE ---
