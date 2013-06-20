@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 6
 
- * Líneas de código VB: 741
+ * Líneas de código VB: 773
 
 Detalle
 =======
@@ -37,46 +37,46 @@ Contenido:
 [B9] \7\
 [C2] \valor\
 [C3] \0\
- DV: Número Entero. Operador:6 Formula1:0 Formula2: 
+ DataValidation: Número Entero. [Operador:"Menor que" Formula1:0 ]
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
- IgnorarVacios:True DatoActualEsVálido:False 
+ OmitirBlancos:True DatoActualEsVálido:False 
 
 [C4] \0.5\
- DV: Decimal. Operador:7 Formula1:=F4 Formula2: 
+ DataValidation: Decimal. [Operador:"Mayor o igual que" Formula1:=F4 ]
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
- IgnorarVacios:True DatoActualEsVálido:True 
+ OmitirBlancos:True DatoActualEsVálido:True 
 
 [C5] \xlValidateInputOnly\
- DV: Lista. Fuente:=$A$2:$A$9 ListaEnCelda:True 
+ DataValidation: Lista. [Fuente:=$A$2:$A$9 ListaEnCelda:True ]
  Mensaje=[Mostrar:True Titulo:"Validación Chidita" Mensaje:"Por favor:/Introduzca un valor correcto." ] 
  Advertencia=[Mostrar:True Titulo:"Error en validación" Mensaje:"El dato introducido no es válido./Favor de verificarlo." Estilo:Límite ] 
- IgnorarVacios:False DatoActualEsVálido:True 
+ OmitirBlancos:False DatoActualEsVálido:True 
 
 [C6] \=TODAY()\
- DV: Fecha. Operador:8 Formula1:20/06/2012 Formula2: 
+ DataValidation: Fecha. [Operador:"Menor o igual que" Formula1:20/06/2012 ]
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
- IgnorarVacios:True DatoActualEsVálido:False 
+ OmitirBlancos:True DatoActualEsVálido:False 
 
 [C7] \=TIME(1,0,0)\
- DV: Hora. Operador:4 Formula1:=F7 Formula2: 
+ DataValidation: Hora. [Operador:"No igual a" Formula1:=F7 ]
  Mensaje=[Mostrar:False Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:False Titulo:"" Mensaje:"" Estilo:Límite ] 
- IgnorarVacios:True DatoActualEsVálido:False 
+ OmitirBlancos:True DatoActualEsVálido:False 
 
 [C8] \A\
- DV: Longitud del texto. Operador:5 Formula1:0 Formula2: 
+ DataValidation: Longitud del texto. [Operador:"Mayor que" Formula1:0 ]
  Mensaje=[Mostrar:False Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
- IgnorarVacios:True DatoActualEsVálido:True 
+ OmitirBlancos:True DatoActualEsVálido:True 
 
 [C9] \d\
- DV: Personalizada. Formula:=E9 
+ DataValidation: Personalizada. [Formula:=E9 ]
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:False Titulo:"" Mensaje:"" Estilo:Límite ] 
- IgnorarVacios:True DatoActualEsVálido:True 
+ OmitirBlancos:True DatoActualEsVálido:True 
 
 [E9] \TRUE\
 [Sheet1]
@@ -175,7 +175,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 664 líneas de código.
+[ExportClass] 696 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -737,22 +737,30 @@ End Function
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVInfo(cell As Range) As String
     Dim Res As String
+    Dim Prefijo As String: Prefijo = " DataValidation: "
     Dim DVType As Long: DVType = GetDVType(cell)
-    Select Case DVType
-    Case XlDVType.xlValidateInputOnly '0
-        Res = " No DV."
-    Case XlDVType.xlValidateWholeNumber '1
-        Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVSharedTypesInfo(cell.Validation)
-    Case XlDVType.xlValidateList '3
-        Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVListInfo(cell.Validation)
-    Case XlDVType.xlValidateCustom '7
-        Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVCustomTypeInfo(cell.Validation)
-    Case Else
-        Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVSharedTypesInfo(cell.Validation)
-    End Select
-    Res = Res & vbCrLf
     
-    Res = Res & " " & GetDVGeneralInfo(cell.Validation)
+    If DVType <> xlValidateInputOnly Then
+        Prefijo = Prefijo & GetDVTypeName(DVType)
+        
+        Select Case DVType
+        Case XlDVType.xlValidateList '3
+            Prefijo = Prefijo & ". [" & GetDVListInfo(cell.Validation) & "]"
+            
+        Case XlDVType.xlValidateCustom '7
+            Prefijo = Prefijo & ". [" & GetDVCustomTypeInfo(cell.Validation) & "]"
+            
+        Case Else
+            Prefijo = Prefijo & ". [" & GetDVSharedTypesInfo(cell.Validation) & "]"
+            
+        End Select
+        
+        Res = Prefijo
+        Res = Res & vbCrLf
+        
+        Res = Res & " " & GetDVGeneralInfo(cell.Validation)
+    End If
+    
     GetDVInfo = Res
 End Function
 
@@ -761,9 +769,9 @@ End Function
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVSharedTypesInfo(valob As Validation) As String
     Dim Res As String
-    Res = Res & "Operador:" & valob.Operator & " "
+    Res = Res & "Operador:""" & GetDVOperatorName(valob.operator) & """ "
     Res = Res & "Formula1:" & valob.Formula1 & " "
-    Res = Res & "Formula2:" & valob.Formula2 & " "
+    If valob.Formula2 <> "" Then Res = Res & "Formula2:" & valob.Formula2 & " "
     GetDVSharedTypesInfo = Res
 End Function
 
@@ -797,7 +805,7 @@ Private Function GetDVGeneralInfo(valob As Validation) As String
     Res = Res & "Advertencia=[" & GetDVAlertInfo(valob) & "] "
     Res = Res & vbCrLf & " "
     
-    Res = Res & "IgnorarVacios:" & valob.IgnoreBlank & " "
+    Res = Res & "OmitirBlancos:" & valob.IgnoreBlank & " "
     Res = Res & "DatoActualEsVálido:" & valob.value & " "
     GetDVGeneralInfo = Res
 End Function
@@ -841,6 +849,30 @@ Private Function GetAlertStyleName(style As XlDVAlertStyle) As String
     GetAlertStyleName = Res
 End Function
 
+Private Function GetDVOperatorName(operator As Long) As String
+    Dim Res As String
+    Select Case operator
+    Case 1
+        Res = "Entre"
+    Case 2
+        Res = "No está entre"
+    Case 3
+        Res = "Igual a"
+    Case 4
+        Res = "No igual a"
+    Case 5
+        Res = "Mayor que"
+    Case 6
+        Res = "Menor que"
+    Case 7
+        Res = "Mayor o igual que"
+    Case 8
+        Res = "Menor o igual que"
+    Case Else
+        Res = "Desconocido"
+    End Select
+    GetDVOperatorName = Res
+End Function
 \\\--- END OF MODULE ---
 
 [LibClass] 18 líneas de código.
