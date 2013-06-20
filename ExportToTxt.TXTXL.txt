@@ -7,9 +7,9 @@ Resumen
 
  * Nombres Definidos: 0
 
- * Módulos de Visual Basic: 5
+ * Módulos de Visual Basic: 6
 
- * Líneas de código VB: 626
+ * Líneas de código VB: 644
 
 Detalle
 =======
@@ -63,6 +63,7 @@ Módulos VBA:
  [Sheet1] Tipo: 100
  [Lib] Tipo: 1
  [Plantillas] Tipo: 1
+ [ExportClass] Tipo: 2
  [LibClass] Tipo: 2
 
 Codigo:
@@ -98,7 +99,7 @@ Public ErrNum, ErrDesc
 'Purpose: Punto de entrada principal a la librería.
 '----------------------------------------------------------------------------------------------------
 Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
-    Dim Exporter As New LibClass
+    Dim Exporter As New ExportClass
     Exporter.Main bookToExport, visual
 End Sub
 
@@ -141,7 +142,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[LibClass] 567 líneas de código.
+[ExportClass] 567 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -708,6 +709,28 @@ Private Function GetDVTypeName(value As XlDVType) As String
             Res = "xlValidateCustom"
     End Select
     GetDVTypeName = Res
+End Function
+
+\\\--- END OF MODULE ---
+
+[LibClass] 18 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Public ErrNum, ErrDesc
+
+Public Function Init() As Object
+Debug.Print "> Inicio LibClass.Init()"
+On Error GoTo Outer_Error
+
+    'Set Init = Me
+    Set Init = New ExportClass
+On Error GoTo 0
+Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
+    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!LibClass.Init] " & Err.Number & ". " & Err.Description
+    Debug.Print "> Fin LibClass.Init()": Debug.Print
+    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
+    ErrNum = Err.Number: ErrDesc = Err.Description
 End Function
 
 \\\--- END OF MODULE ---
