@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 6
 
- * Líneas de código VB: 724
+ * Líneas de código VB: 741
 
 Detalle
 =======
@@ -37,51 +37,53 @@ Contenido:
 [B9] \7\
 [C2] \valor\
 [C3] \0\
- DV: Número Entero. 
- IgnorarVacios:True 
+ DV: Número Entero. Operador:6 Formula1:0 Formula2: 
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
+ IgnorarVacios:True DatoActualEsVálido:False 
 
 [C4] \0.5\
- DV: Decimal. 
- IgnorarVacios:True 
+ DV: Decimal. Operador:7 Formula1:=F4 Formula2: 
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
+ IgnorarVacios:True DatoActualEsVálido:True 
 
 [C5] \xlValidateInputOnly\
  DV: Lista. Fuente:=$A$2:$A$9 ListaEnCelda:True 
- IgnorarVacios:False 
  Mensaje=[Mostrar:True Titulo:"Validación Chidita" Mensaje:"Por favor:/Introduzca un valor correcto." ] 
  Advertencia=[Mostrar:True Titulo:"Error en validación" Mensaje:"El dato introducido no es válido./Favor de verificarlo." Estilo:Límite ] 
+ IgnorarVacios:False DatoActualEsVálido:True 
 
 [C6] \=TODAY()\
- DV: Fecha. 
- IgnorarVacios:True 
+ DV: Fecha. Operador:8 Formula1:20/06/2012 Formula2: 
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
+ IgnorarVacios:True DatoActualEsVálido:False 
 
 [C7] \=TIME(1,0,0)\
- DV: Hora. 
- IgnorarVacios:True 
+ DV: Hora. Operador:4 Formula1:=F7 Formula2: 
  Mensaje=[Mostrar:False Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:False Titulo:"" Mensaje:"" Estilo:Límite ] 
+ IgnorarVacios:True DatoActualEsVálido:False 
 
 [C8] \A\
- DV: Longitud del texto. 
- IgnorarVacios:True 
+ DV: Longitud del texto. Operador:5 Formula1:0 Formula2: 
  Mensaje=[Mostrar:False Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
+ IgnorarVacios:True DatoActualEsVálido:True 
 
 [C9] \d\
  DV: Personalizada. Formula:=E9 
- IgnorarVacios:True 
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:False Titulo:"" Mensaje:"" Estilo:Límite ] 
+ IgnorarVacios:True DatoActualEsVálido:True 
 
 [E9] \TRUE\
 [Sheet1]
+[F4] \0\
 [F6] \=DATE(2012,6,20)\
 [F7] \0.0416666666666667\
+[G4] \1\
 [G6] \=DATE(2014,6,20)\
 [G7] \0.958333333333333\
 
@@ -173,7 +175,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 647 líneas de código.
+[ExportClass] 664 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -739,16 +741,30 @@ Private Function GetDVInfo(cell As Range) As String
     Select Case DVType
     Case XlDVType.xlValidateInputOnly '0
         Res = " No DV."
+    Case XlDVType.xlValidateWholeNumber '1
+        Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVSharedTypesInfo(cell.Validation)
     Case XlDVType.xlValidateList '3
         Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVListInfo(cell.Validation)
     Case XlDVType.xlValidateCustom '7
         Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVCustomTypeInfo(cell.Validation)
     Case Else
-        Res = " DV: " & GetDVTypeName(DVType) & ". "
+        Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVSharedTypesInfo(cell.Validation)
     End Select
     Res = Res & vbCrLf
+    
     Res = Res & " " & GetDVGeneralInfo(cell.Validation)
     GetDVInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa un string con la información compartida entre algunos tipos de validación
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVSharedTypesInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Operador:" & valob.Operator & " "
+    Res = Res & "Formula1:" & valob.Formula1 & " "
+    Res = Res & "Formula2:" & valob.Formula2 & " "
+    GetDVSharedTypesInfo = Res
 End Function
 
 '----------------------------------------------------------------------------------------------------
@@ -775,11 +791,14 @@ End Function
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVGeneralInfo(valob As Validation) As String
     Dim Res As String
-    Res = Res & "IgnorarVacios:" & valob.IgnoreBlank & " "
-    Res = Res & vbCrLf & " "
     Res = Res & "Mensaje=[" & GetDVInputInfo(valob) & "] "
     Res = Res & vbCrLf & " "
+    
     Res = Res & "Advertencia=[" & GetDVAlertInfo(valob) & "] "
+    Res = Res & vbCrLf & " "
+    
+    Res = Res & "IgnorarVacios:" & valob.IgnoreBlank & " "
+    Res = Res & "DatoActualEsVálido:" & valob.value & " "
     GetDVGeneralInfo = Res
 End Function
 
