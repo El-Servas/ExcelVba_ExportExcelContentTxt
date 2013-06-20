@@ -37,46 +37,46 @@ Contenido:
 [B9] \7\
 [C2] \valor\
 [C3] \0\
- DV: WholeNumber. 
+ DV: Número Entero. 
  IgnorarVacios:True 
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
- Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
 
 [C4] \0.5\
  DV: Decimal. 
  IgnorarVacios:True 
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
- Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
 
 [C5] \xlValidateInputOnly\
- DV: List. Fuente:=$A$2:$A$9 ListaEnCelda:True 
+ DV: Lista. Fuente:=$A$2:$A$9 ListaEnCelda:True 
  IgnorarVacios:False 
  Mensaje=[Mostrar:True Titulo:"Validación Chidita" Mensaje:"Por favor:/Introduzca un valor correcto." ] 
- Advertencia=[Mostrar:True Titulo:"Error en validación" Mensaje:"El dato introducido no es válido./Favor de verificarlo." Estilo:Detener ] 
+ Advertencia=[Mostrar:True Titulo:"Error en validación" Mensaje:"El dato introducido no es válido./Favor de verificarlo." Estilo:Límite ] 
 
 [C6] \=TODAY()\
- DV: Date. 
+ DV: Fecha. 
  IgnorarVacios:True 
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
- Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
 
 [C7] \=TIME(1,0,0)\
- DV: Time. 
+ DV: Hora. 
  IgnorarVacios:True 
- Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
- Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
+ Mensaje=[Mostrar:False Titulo:"" Mensaje:"" ] 
+ Advertencia=[Mostrar:False Titulo:"" Mensaje:"" Estilo:Límite ] 
 
 [C8] \A\
- DV: TextLength. 
+ DV: Longitud del texto. 
  IgnorarVacios:True 
- Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
- Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
+ Mensaje=[Mostrar:False Titulo:"" Mensaje:"" ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Límite ] 
 
 [C9] \d\
- DV: Custom. Formula:=E9 
+ DV: Personalizada. Formula:=E9 
  IgnorarVacios:True 
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
- Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
+ Advertencia=[Mostrar:False Titulo:"" Mensaje:"" Estilo:Límite ] 
 
 [E9] \TRUE\
 [Sheet1]
@@ -710,22 +710,22 @@ End Function
 Private Function GetDVTypeName(value As XlDVType) As String
     Dim Res As String
     Select Case value
-        Case xlValidateInputOnly
-            Res = "InputOnly"
-        Case xlValidateWholeNumber
-            Res = "WholeNumber"
-        Case xlValidateDecimal
-            Res = "Decimal"
-        Case xlValidateList
-            Res = "List"
-        Case xlValidateDate
-            Res = "Date"
-        Case xlValidateTime
-            Res = "Time"
-        Case xlValidateTextLength
-            Res = "TextLength"
-        Case xlValidateCustom
-            Res = "Custom"
+    Case xlValidateInputOnly
+        Res = "InputOnly"
+    Case xlValidateWholeNumber
+        Res = "Número Entero"
+    Case xlValidateDecimal
+        Res = "Decimal"
+    Case xlValidateList
+        Res = "Lista"
+    Case xlValidateDate
+        Res = "Fecha"
+    Case xlValidateTime
+        Res = "Hora"
+    Case xlValidateTextLength
+        Res = "Longitud del texto"
+    Case xlValidateCustom
+        Res = "Personalizada"
     End Select
     GetDVTypeName = Res
 End Function
@@ -813,7 +813,7 @@ Private Function GetAlertStyleName(style As XlDVAlertStyle) As String
     Dim Res As String
     Select Case style
     Case xlValidAlertStop
-        Res = "Detener"
+        Res = "Límite"
     Case xlValidAlertWarning
         Res = "Advertencia"
     Case xlValidAlertInformation
