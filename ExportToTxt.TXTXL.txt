@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 6
 
- * Líneas de código VB: 694
+ * Líneas de código VB: 710
 
 Detalle
 =======
@@ -37,28 +37,46 @@ Contenido:
 [B9] \7\
 [C2] \valor\
 [C3] \0\
- DV: WholeNumber
+ DV: WholeNumber. 
+ IgnorarVacios:True 
+ Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
 
 [C4] \0.5\
- DV: Decimal
+ DV: Decimal. 
+ IgnorarVacios:True 
+ Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
 
 [C5] \xlValidateInputOnly\
  DV: List. Fuente:=$A$2:$A$9 ListaEnCelda:True 
  IgnorarVacios:False 
  Mensaje=[Mostrar:True Titulo:"Validación Chidita" Mensaje:"Por favor:/Introduzca un valor correcto." ] 
- Advertencia=[Mostrar:True Titulo:"Error en validación" Mensaje:"El dato introducido no es válido./Favor de verificarlo." ] 
+ Advertencia=[Mostrar:True Titulo:"Error en validación" Mensaje:"El dato introducido no es válido./Favor de verificarlo." Estilo:Detener ] 
 
 [C6] \=TODAY()\
- DV: Date
+ DV: Date. 
+ IgnorarVacios:True 
+ Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
 
 [C7] \=TIME(1,0,0)\
- DV: Time
+ DV: Time. 
+ IgnorarVacios:True 
+ Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
 
 [C8] \A\
- DV: TextLength
+ DV: TextLength. 
+ IgnorarVacios:True 
+ Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
 
 [C9] \d\
- DV: Custom
+ DV: Custom. 
+ IgnorarVacios:True 
+ Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
 
 [F6] \=DATE(2012,6,20)\
 [Sheet1]
@@ -154,7 +172,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 617 líneas de código.
+[ExportClass] 633 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -663,7 +681,7 @@ Sub MensajeFinal()
 End Sub
 
 '----------------------------------------------------------------------------------------------------
-'Purpose: Verdadero si  la celda tiene Data Validation asociada.
+'Purpose: Verdadero si la celda tiene Data Validation asociada.
 '----------------------------------------------------------------------------------------------------
 Private Function CellHasValidation(cell As Range) As Boolean
 On Error GoTo NoValidation
@@ -672,21 +690,6 @@ On Error GoTo NoValidation
     CellHasValidation = True
 Exit Function
 NoValidation:
-End Function
-
-'----------------------------------------------------------------------------------------------------
-'Purpose: Reune la información relevante de la data validation y lo regresa como un string para ser exportado.
-'----------------------------------------------------------------------------------------------------
-Private Function GetDVInfo(cell As Range) As String
-    Dim DVType As Long: DVType = GetDVType(cell)
-    Select Case DVType
-    Case XlDVType.xlValidateInputOnly '0
-        GetDVInfo = " No DV."
-    Case XlDVType.xlValidateList '3
-        GetDVInfo = " DV: " & GetDVTypeName(DVType) & ". " & GetDVListInfo(cell.Validation)
-    Case Else
-        GetDVInfo = " DV: " & GetDVTypeName(DVType)
-    End Select
 End Function
 
 '----------------------------------------------------------------------------------------------------
@@ -727,14 +730,31 @@ Private Function GetDVTypeName(value As XlDVType) As String
 End Function
 
 '----------------------------------------------------------------------------------------------------
+'Purpose: Reune la información relevante de la data validation y lo regresa como un string para ser exportado.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVInfo(cell As Range) As String
+    Dim Res As String
+    Dim DVType As Long: DVType = GetDVType(cell)
+    Select Case DVType
+    Case XlDVType.xlValidateInputOnly '0
+        Res = " No DV."
+    Case XlDVType.xlValidateList '3
+        Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVListInfo(cell.Validation)
+    Case Else
+        Res = " DV: " & GetDVTypeName(DVType) & ". "
+    End Select
+    Res = Res & vbCrLf
+    Res = Res & " " & GetDVGeneralInfo(cell.Validation)
+    GetDVInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
 'Purpose: Regresa un string con la información de validación de tipo lista.
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVListInfo(valob As Validation) As String
     Dim Res As String
     Res = Res & "Fuente:" & valob.Formula1 & " "
     Res = Res & "ListaEnCelda:" & valob.InCellDropdown & " "
-    Res = Res & vbCrLf & " "
-    Res = Res & GetDVGeneralInfo(valob)
     GetDVListInfo = Res
 End Function
 
@@ -770,7 +790,21 @@ Private Function GetDVAlertInfo(valob As Validation) As String
     Res = Res & "Mostrar:" & valob.ShowError & " "
     Res = Res & "Titulo:""" & valob.ErrorTitle & """ "
     Res = Res & "Mensaje:""" & Replace(valob.ErrorMessage, vbLf, "/") & """ "
+    Res = Res & "Estilo:" & GetAlertStyleName(valob.alertStyle) & " "
     GetDVAlertInfo = Res
+End Function
+
+Private Function GetAlertStyleName(style As XlDVAlertStyle) As String
+    Dim Res As String
+    Select Case style
+    Case xlValidAlertStop
+        Res = "Detener"
+    Case xlValidAlertWarning
+        Res = "Advertencia"
+    Case xlValidAlertInformation
+        Res = "Información."
+    End Select
+    GetAlertStyleName = Res
 End Function
 
 \\\--- END OF MODULE ---
