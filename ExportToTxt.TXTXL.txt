@@ -54,7 +54,7 @@ End Sub
 '---------------------------------------------------------------------------------------
 
 Option Explicit
-Public Const VERSION As String = "v2.11 - 2013-06-20"
+Public Const VERSION As String = "POST v2.11 - 2013-06-20"
 '---------------------------------------------------------------------------------------
 Public Const LIB_NAME As String = "Lib_ExportToTxt"
 Public Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
@@ -832,4 +832,4 @@ End Function
 
 
 ** Fin del proceso de exportación. **
-Lib_ExportToTxt [ExportToTxt.xls] v2.11 - 2013-06-20
+Lib_ExportToTxt [ExportToTxt.xls] POST v2.11 - 2013-06-20
