@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 573
+ * Líneas de código VB: 626
 
 Detalle
 =======
@@ -37,17 +37,22 @@ Contenido:
 [B9] \7\
 [C2] \valor\
 [C3] \0\
- * Celda con Data Validation
+ * Celda CON DV: xlValidateWholeNumber
+
 [C4] \1\
- * Celda con Data Validation
+ * Celda CON DV: xlValidateDecimal
+
 [C5] \xlValidateInputOnly\
- * Celda con Data Validation
+ * Celda CON DV: xlValidateList
+
 [C6] \No Validation\
 [C7] \No Validation\
 [C8] \A\
- * Celda con Data Validation
+ * Celda CON DV: xlValidateTextLength
+
 [C9] \d\
- * Celda con Data Validation
+ * Celda CON DV: xlValidateCustom
+
 
 Nombres:
 
@@ -136,7 +141,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[LibClass] 514 líneas de código.
+[LibClass] 567 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -560,7 +565,10 @@ On Error GoTo DelegateError
         Log Direccion & NombreDefinido & Contenido
         
         'Reportamos si la celda tiene DV o no:
-        If CellHasValidation(cell) Then Log " * Celda con Data Validation"
+        If CellHasValidation(cell) Then
+            Log GetDVInfo(cell)
+            Log
+        End If
         
         ProcesaCelda = iterationIndex + 1
     End If
@@ -652,6 +660,56 @@ On Error GoTo NoValidation
 Exit Function
 NoValidation:
 End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Reune la información relevante de la data validation y lo regresa como un string para ser exportado.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVInfo(cell As Range) As String
+    Select Case GetDVType(cell)
+    Case 0
+        GetDVInfo = " * Celda sin DV"
+    Case Else
+        GetDVInfo = " * Celda CON DV: " & GetDVTypeName(GetDVType(cell))
+    End Select
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa el XlDVType de una celda.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVType(cell As Range) As Long
+    If Not CellHasValidation(cell) Then
+        GetDVType = 0
+    Else
+        GetDVType = cell.Validation.Type
+    End If
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa el nombre del tipo de la enumeración XlDVType
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVTypeName(value As XlDVType) As String
+    Dim Res As String
+    Select Case value
+        Case xlValidateInputOnly
+            Res = "xlValidateInputOnly"
+        Case xlValidateWholeNumber
+            Res = "xlValidateWholeNumber"
+        Case xlValidateDecimal
+            Res = "xlValidateDecimal"
+        Case xlValidateList
+            Res = "xlValidateList"
+        Case xlValidateDate
+            Res = "xlValidateDate"
+        Case xlValidateTime
+            Res = "xlValidateTime"
+        Case xlValidateTextLength
+            Res = "xlValidateTextLength"
+        Case xlValidateCustom
+            Res = "xlValidateCustom"
+    End Select
+    GetDVTypeName = Res
+End Function
+
 \\\--- END OF MODULE ---
 
 
