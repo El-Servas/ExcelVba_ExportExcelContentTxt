@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 6
 
- * Líneas de código VB: 710
+ * Líneas de código VB: 724
 
 Detalle
 =======
@@ -73,13 +73,14 @@ Contenido:
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
 
 [C9] \d\
- DV: Custom. 
+ DV: Custom. Formula:=E9 
  IgnorarVacios:True 
  Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
  Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Detener ] 
 
-[F6] \=DATE(2012,6,20)\
+[E9] \TRUE\
 [Sheet1]
+[F6] \=DATE(2012,6,20)\
 [F7] \0.0416666666666667\
 [G6] \=DATE(2014,6,20)\
 [G7] \0.958333333333333\
@@ -172,7 +173,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 633 líneas de código.
+[ExportClass] 647 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -740,6 +741,8 @@ Private Function GetDVInfo(cell As Range) As String
         Res = " No DV."
     Case XlDVType.xlValidateList '3
         Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVListInfo(cell.Validation)
+    Case XlDVType.xlValidateCustom '7
+        Res = " DV: " & GetDVTypeName(DVType) & ". " & GetDVCustomTypeInfo(cell.Validation)
     Case Else
         Res = " DV: " & GetDVTypeName(DVType) & ". "
     End Select
@@ -749,13 +752,22 @@ Private Function GetDVInfo(cell As Range) As String
 End Function
 
 '----------------------------------------------------------------------------------------------------
-'Purpose: Regresa un string con la información de validación de tipo lista.
+'Purpose: Regresa un string con la información de validación específica del tipo Lista.
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVListInfo(valob As Validation) As String
     Dim Res As String
     Res = Res & "Fuente:" & valob.Formula1 & " "
     Res = Res & "ListaEnCelda:" & valob.InCellDropdown & " "
     GetDVListInfo = Res
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa un string con la información de validación específica del tipo Custom.
+'----------------------------------------------------------------------------------------------------
+Private Function GetDVCustomTypeInfo(valob As Validation) As String
+    Dim Res As String
+    Res = Res & "Formula:" & valob.Formula1 & " "
+    GetDVCustomTypeInfo = Res
 End Function
 
 '----------------------------------------------------------------------------------------------------
@@ -794,6 +806,9 @@ Private Function GetDVAlertInfo(valob As Validation) As String
     GetDVAlertInfo = Res
 End Function
 
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa el nombre del tipo de la enum XlDVAlertStyle
+'----------------------------------------------------------------------------------------------------
 Private Function GetAlertStyleName(style As XlDVAlertStyle) As String
     Dim Res As String
     Select Case style
