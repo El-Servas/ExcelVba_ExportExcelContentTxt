@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 557
+ * Líneas de código VB: 573
 
 Detalle
 =======
@@ -19,6 +19,35 @@ Hojas:
 
 Contenido:
 [Sheet1]
+[A2] \xlValidateInputOnly\
+[A3] \xlValidateWholeNumber\
+[A4] \xlValidateDecimal\
+[A5] \xlValidateList\
+[A6] \xlValidateDate\
+[A7] \xlValidateTime\
+[A8] \xlValidateTextLength\
+[A9] \xlValidateCustom\
+[B2] \0\
+[B3] \1\
+[B4] \2\
+[B5] \3\
+[B6] \4\
+[B7] \5\
+[B8] \6\
+[B9] \7\
+[C2] \valor\
+[C3] \0\
+ * Celda con Data Validation
+[C4] \1\
+ * Celda con Data Validation
+[C5] \xlValidateInputOnly\
+ * Celda con Data Validation
+[C6] \No Validation\
+[C7] \No Validation\
+[C8] \A\
+ * Celda con Data Validation
+[C9] \d\
+ * Celda con Data Validation
 
 Nombres:
 
@@ -107,7 +136,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[LibClass] 498 líneas de código.
+[LibClass] 514 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -529,6 +558,10 @@ On Error GoTo DelegateError
         NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
         Contenido = "\" & Contenido & "\"
         Log Direccion & NombreDefinido & Contenido
+        
+        'Reportamos si la celda tiene DV o no:
+        If CellHasValidation(cell) Then Log " * Celda con Data Validation"
+        
         ProcesaCelda = iterationIndex + 1
     End If
 DelegateError:
@@ -607,6 +640,18 @@ Sub MensajeFinal()
     Log MensajeFinal
     Log GenVersionString()
 End Sub
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Verdadero si  la celda tiene Data Validation asociada.
+'----------------------------------------------------------------------------------------------------
+Private Function CellHasValidation(cell As Range) As Boolean
+On Error GoTo NoValidation
+    Dim dummy As XlDVType
+    dummy = cell.Validation.Type
+    CellHasValidation = True
+Exit Function
+NoValidation:
+End Function
 \\\--- END OF MODULE ---
 
 
