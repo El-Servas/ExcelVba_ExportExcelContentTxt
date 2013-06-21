@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 7
 
- * Líneas de código VB: 790
+ * Líneas de código VB: 791
 
 Detalle
 =======
@@ -109,7 +109,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 508 líneas de código.
+[ExportClass] 507 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -161,6 +161,7 @@ Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocur
 Private Sub Class_Initialize()
     Set RH = Application.Run("Personal.xlsb!GetRunHelper")
     Set FSO = RH.GetUtils().GetFSO()
+    Set DvInfo = New DvInfoClass
 End Sub
 
 Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
@@ -479,9 +480,7 @@ On Error GoTo DelegateError
     
     'Procesamos las celdas.
     Log "[" & sheet.name & "]" & Mensaje
-    Set DvInfo = New DvInfoClass
     IteraCeldas sheet, "ProcesaCelda"
-    Set DvInfo = Nothing
     Log
     
     'Reprotegemos si es necesario
@@ -643,7 +642,7 @@ End Function
 
 \\\--- END OF MODULE ---
 
-[DvInfoClass] 205 líneas de código.
+[DvInfoClass] 207 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
@@ -651,6 +650,9 @@ Public ErrNum, ErrDesc
 
 Private cell As Range 'La celda a examinar
 
+'----------------------------------------------------------------------------------------------------
+'Purpose: Asigna la celda a examinar.
+'----------------------------------------------------------------------------------------------------
 Public Sub SetCellToExamine(celda As Range)
     Set cell = celda
 End Sub
@@ -849,7 +851,6 @@ Private Function GetDVOperatorName(operator As Long) As String
     End Select
     GetDVOperatorName = Res
 End Function
-
 \\\--- END OF MODULE ---
 
 
