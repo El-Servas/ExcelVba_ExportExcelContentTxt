@@ -7,9 +7,9 @@ Resumen
 
  * Nombres Definidos: 0
 
- * Módulos de Visual Basic: 6
+ * Módulos de Visual Basic: 7
 
- * Líneas de código VB: 773
+ * Líneas de código VB: 794
 
 Detalle
 =======
@@ -31,6 +31,7 @@ Módulos VBA:
  [Plantillas] Tipo: 1
  [ExportClass] Tipo: 2
  [LibClass] Tipo: 2
+ [DvInfoClass] Tipo: 2
 
 Codigo:
 [ThisWorkbook] 6 líneas de código.
@@ -54,7 +55,7 @@ End Sub
 '---------------------------------------------------------------------------------------
 
 Option Explicit
-Public Const VERSION As String = "v2.11 - 2013-06-20"
+Public Const VERSION As String = "v2.11.1"
 '---------------------------------------------------------------------------------------
 Public Const LIB_NAME As String = "Lib_ExportToTxt"
 Public Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
@@ -108,7 +109,7 @@ Sub PlantillaParaLlamarADelegado()
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 696 líneas de código.
+[ExportClass] 507 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -144,6 +145,7 @@ Private Const AUTO_START_PATH_SUFFIX As String = "Microsoft\Excel\XLSTART"
 Private RH 'La clase RunHelper.
 Private FSO As New Scripting.FileSystemObject
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
+Private DvInfo As DvInfoClass 'Clase que nos va a dar la información de DataValidation.
 Private flVisual As Boolean 'Bandera que define si la ejecución es con confirmación visual.
 
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
@@ -159,6 +161,7 @@ Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocur
 Private Sub Class_Initialize()
     Set RH = Application.Run("Personal.xlsb!GetRunHelper")
     Set FSO = RH.GetUtils().GetFSO()
+    Set DvInfo = New DvInfoClass
 End Sub
 
 Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
@@ -532,8 +535,8 @@ On Error GoTo DelegateError
         Log Direccion & NombreDefinido & Contenido
         
         'Reportamos si la celda tiene DV o no:
-        If CellHasValidation(cell) Then
-            Log GetDVInfo(cell)
+        If DvInfo.CellHasValidation(cell) Then
+            Log DvInfo.GetDVInfo()
             Log
         End If
         
@@ -615,17 +618,91 @@ Sub MensajeFinal()
     Log MensajeFinal
     Log GenVersionString()
 End Sub
+\\\--- END OF MODULE ---
+
+[LibClass] 18 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Public ErrNum, ErrDesc
+
+Public Function Init() As Object
+Debug.Print "> Inicio LibClass.Init()"
+On Error GoTo Outer_Error
+
+    'Set Init = Me
+    Set Init = New ExportClass
+On Error GoTo 0
+Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
+    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!LibClass.Init] " & Err.Number & ". " & Err.Description
+    Debug.Print "> Fin LibClass.Init()": Debug.Print
+    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
+    ErrNum = Err.Number: ErrDesc = Err.Description
+End Function
+
+\\\--- END OF MODULE ---
+
+[DvInfoClass] 210 líneas de código.
+///--- BEGINNING OF MODULE ---
+Option Explicit
+
+Public ErrNum, ErrDesc
+
+Private cell As Range 'La celda a examinar
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Asigna la celda a examinar.
+'----------------------------------------------------------------------------------------------------
+Public Sub SetCellToExamine(celda As Range)
+    Set cell = celda
+End Sub
 
 '----------------------------------------------------------------------------------------------------
 'Purpose: Verdadero si la celda tiene Data Validation asociada.
 '----------------------------------------------------------------------------------------------------
-Private Function CellHasValidation(cell As Range) As Boolean
+Public Function CellHasValidation(celda As Range) As Boolean
+    SetCellToExamine celda
 On Error GoTo NoValidation
     Dim dummy As XlDVType
-    dummy = cell.Validation.Type
+    dummy = celda.Validation.Type
     CellHasValidation = True
 Exit Function
 NoValidation:
+End Function
+
+'----------------------------------------------------------------------------------------------------
+'Purpose: Reune la información relevante de la data validation y lo regresa como un string para ser exportado.
+'----------------------------------------------------------------------------------------------------
+Public Function GetDVInfo() As String
+    Dim Res As String
+    Dim DVType As Long
+    Dim Prefijo As String
+    
+    DVType = GetDVType(cell)
+    Prefijo = " DataValidation: "
+    Prefijo = Prefijo & GetDVTypeName(DVType)
+    
+    Select Case DVType
+    Case XlDVType.xlValidateInputOnly '0
+        Prefijo = Prefijo & "."
+    
+    Case XlDVType.xlValidateList '3
+        Prefijo = Prefijo & ". [" & GetDVListInfo(cell.Validation) & "]"
+        
+    Case XlDVType.xlValidateCustom '7
+        Prefijo = Prefijo & ". [" & GetDVCustomTypeInfo(cell.Validation) & "]"
+        
+    Case Else
+        Prefijo = Prefijo & ". [" & GetDVSharedTypesInfo(cell.Validation) & "]"
+        
+    End Select
+    
+    Res = Prefijo
+    Res = Res & vbCrLf
+    
+    Res = Res & " " & GetDVGeneralInfo(cell.Validation)
+    
+    GetDVInfo = Res
 End Function
 
 '----------------------------------------------------------------------------------------------------
@@ -666,45 +743,13 @@ Private Function GetDVTypeName(value As XlDVType) As String
 End Function
 
 '----------------------------------------------------------------------------------------------------
-'Purpose: Reune la información relevante de la data validation y lo regresa como un string para ser exportado.
-'----------------------------------------------------------------------------------------------------
-Private Function GetDVInfo(cell As Range) As String
-    Dim Res As String
-    Dim Prefijo As String: Prefijo = " DataValidation: "
-    Dim DVType As Long: DVType = GetDVType(cell)
-    
-    If DVType <> xlValidateInputOnly Then
-        Prefijo = Prefijo & GetDVTypeName(DVType)
-        
-        Select Case DVType
-        Case XlDVType.xlValidateList '3
-            Prefijo = Prefijo & ". [" & GetDVListInfo(cell.Validation) & "]"
-            
-        Case XlDVType.xlValidateCustom '7
-            Prefijo = Prefijo & ". [" & GetDVCustomTypeInfo(cell.Validation) & "]"
-            
-        Case Else
-            Prefijo = Prefijo & ". [" & GetDVSharedTypesInfo(cell.Validation) & "]"
-            
-        End Select
-        
-        Res = Prefijo
-        Res = Res & vbCrLf
-        
-        Res = Res & " " & GetDVGeneralInfo(cell.Validation)
-    End If
-    
-    GetDVInfo = Res
-End Function
-
-'----------------------------------------------------------------------------------------------------
 'Purpose: Regresa un string con la información compartida entre algunos tipos de validación
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVSharedTypesInfo(valob As Validation) As String
     Dim Res As String
     Res = Res & "Operador:""" & GetDVOperatorName(valob.operator) & """ "
-    Res = Res & "Formula1:" & valob.Formula1 & " "
-    If valob.Formula2 <> "" Then Res = Res & "Formula2:" & valob.Formula2 & " "
+    Res = Res & "Formula1:""" & valob.Formula1 & """ "
+    If valob.Formula2 <> "" Then Res = Res & "Formula2:""" & valob.Formula2 & """ "
     GetDVSharedTypesInfo = Res
 End Function
 
@@ -713,7 +758,7 @@ End Function
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVListInfo(valob As Validation) As String
     Dim Res As String
-    Res = Res & "Fuente:" & valob.Formula1 & " "
+    Res = Res & "Fuente:""" & valob.Formula1 & """ "
     Res = Res & "ListaEnCelda:" & valob.InCellDropdown & " "
     GetDVListInfo = Res
 End Function
@@ -723,7 +768,7 @@ End Function
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVCustomTypeInfo(valob As Validation) As String
     Dim Res As String
-    Res = Res & "Formula:" & valob.Formula1 & " "
+    Res = Res & "Formula:""" & valob.Formula1 & """ "
     GetDVCustomTypeInfo = Res
 End Function
 
@@ -773,7 +818,7 @@ Private Function GetAlertStyleName(style As XlDVAlertStyle) As String
     Dim Res As String
     Select Case style
     Case xlValidAlertStop
-        Res = "Límite"
+        Res = "Grave"
     Case xlValidAlertWarning
         Res = "Advertencia"
     Case xlValidAlertInformation
@@ -782,6 +827,9 @@ Private Function GetAlertStyleName(style As XlDVAlertStyle) As String
     GetAlertStyleName = Res
 End Function
 
+'----------------------------------------------------------------------------------------------------
+'Purpose: Regresa los nombres de los operadores.
+'----------------------------------------------------------------------------------------------------
 Private Function GetDVOperatorName(operator As Long) As String
     Dim Res As String
     Select Case operator
@@ -808,28 +856,6 @@ Private Function GetDVOperatorName(operator As Long) As String
 End Function
 \\\--- END OF MODULE ---
 
-[LibClass] 18 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
-Public ErrNum, ErrDesc
-
-Public Function Init() As Object
-Debug.Print "> Inicio LibClass.Init()"
-On Error GoTo Outer_Error
-
-    'Set Init = Me
-    Set Init = New ExportClass
-On Error GoTo 0
-Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
-    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!LibClass.Init] " & Err.Number & ". " & Err.Description
-    Debug.Print "> Fin LibClass.Init()": Debug.Print
-    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
-    ErrNum = Err.Number: ErrDesc = Err.Description
-End Function
-
-\\\--- END OF MODULE ---
-
 
 ** Fin del proceso de exportación. **
-Lib_ExportToTxt [ExportToTxt.xls] v2.11 - 2013-06-20
+Lib_ExportToTxt [ExportToTxt.xls] v2.11.1
