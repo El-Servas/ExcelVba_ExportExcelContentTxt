@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 7
 
- * Líneas de código VB: 791
+ * Líneas de código VB: 794
 
 Detalle
 =======
@@ -642,7 +642,7 @@ End Function
 
 \\\--- END OF MODULE ---
 
-[DvInfoClass] 207 líneas de código.
+[DvInfoClass] 210 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 
@@ -675,29 +675,32 @@ End Function
 '----------------------------------------------------------------------------------------------------
 Public Function GetDVInfo() As String
     Dim Res As String
-    Dim Prefijo As String: Prefijo = " DataValidation: "
-    Dim DVType As Long: DVType = GetDVType(cell)
+    Dim DVType As Long
+    Dim Prefijo As String
     
-    If DVType <> xlValidateInputOnly Then
-        Prefijo = Prefijo & GetDVTypeName(DVType)
+    DVType = GetDVType(cell)
+    Prefijo = " DataValidation: "
+    Prefijo = Prefijo & GetDVTypeName(DVType)
+    
+    Select Case DVType
+    Case XlDVType.xlValidateInputOnly '0
+        Prefijo = Prefijo & "."
+    
+    Case XlDVType.xlValidateList '3
+        Prefijo = Prefijo & ". [" & GetDVListInfo(cell.Validation) & "]"
         
-        Select Case DVType
-        Case XlDVType.xlValidateList '3
-            Prefijo = Prefijo & ". [" & GetDVListInfo(cell.Validation) & "]"
-            
-        Case XlDVType.xlValidateCustom '7
-            Prefijo = Prefijo & ". [" & GetDVCustomTypeInfo(cell.Validation) & "]"
-            
-        Case Else
-            Prefijo = Prefijo & ". [" & GetDVSharedTypesInfo(cell.Validation) & "]"
-            
-        End Select
+    Case XlDVType.xlValidateCustom '7
+        Prefijo = Prefijo & ". [" & GetDVCustomTypeInfo(cell.Validation) & "]"
         
-        Res = Prefijo
-        Res = Res & vbCrLf
+    Case Else
+        Prefijo = Prefijo & ". [" & GetDVSharedTypesInfo(cell.Validation) & "]"
         
-        Res = Res & " " & GetDVGeneralInfo(cell.Validation)
-    End If
+    End Select
+    
+    Res = Prefijo
+    Res = Res & vbCrLf
+    
+    Res = Res & " " & GetDVGeneralInfo(cell.Validation)
     
     GetDVInfo = Res
 End Function
@@ -745,8 +748,8 @@ End Function
 Private Function GetDVSharedTypesInfo(valob As Validation) As String
     Dim Res As String
     Res = Res & "Operador:""" & GetDVOperatorName(valob.operator) & """ "
-    Res = Res & "Formula1:" & valob.Formula1 & " "
-    If valob.Formula2 <> "" Then Res = Res & "Formula2:" & valob.Formula2 & " "
+    Res = Res & "Formula1:""" & valob.Formula1 & """ "
+    If valob.Formula2 <> "" Then Res = Res & "Formula2:""" & valob.Formula2 & """ "
     GetDVSharedTypesInfo = Res
 End Function
 
@@ -755,7 +758,7 @@ End Function
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVListInfo(valob As Validation) As String
     Dim Res As String
-    Res = Res & "Fuente:" & valob.Formula1 & " "
+    Res = Res & "Fuente:""" & valob.Formula1 & """ "
     Res = Res & "ListaEnCelda:" & valob.InCellDropdown & " "
     GetDVListInfo = Res
 End Function
@@ -765,7 +768,7 @@ End Function
 '----------------------------------------------------------------------------------------------------
 Private Function GetDVCustomTypeInfo(valob As Validation) As String
     Dim Res As String
-    Res = Res & "Formula:" & valob.Formula1 & " "
+    Res = Res & "Formula:""" & valob.Formula1 & """ "
     GetDVCustomTypeInfo = Res
 End Function
 
