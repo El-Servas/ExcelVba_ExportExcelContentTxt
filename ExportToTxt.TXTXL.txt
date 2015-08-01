@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 7
 
- * Líneas de código VB: 794
+ * Líneas de código VB: 801
 
 Detalle
 =======
@@ -48,7 +48,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Lib] 36 líneas de código.
+[Lib] 43 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Librería: Exporta una representación textual de un libro de Excel
@@ -86,6 +86,13 @@ Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
     ErrNum = Err.Number: ErrDesc = Err.Description
 End Function
 
+'----------------------------------------------------------------------------------------------------
+'Purpose: Prueba para exportar el libro actual.
+'----------------------------------------------------------------------------------------------------
+Public Sub ExportActiveWorkbook()
+    Dim Exporter As New ExportClass
+    Exporter.Main ActiveWorkbook, True
+End Sub
 \\\--- END OF MODULE ---
 
 [Plantillas] 17 líneas de código.
@@ -159,8 +166,8 @@ Private flBookInAutoStartPath As Boolean
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
 Private Sub Class_Initialize()
-    Set RH = Application.Run("Personal.xlsb!GetRunHelper")
-    Set FSO = RH.GetUtils().GetFSO()
+    'Set RH = Application.Run("Personal.xlsb!GetRunHelper")
+    Set FSO = New FileSystemObject
     Set DvInfo = New DvInfoClass
 End Sub
 
