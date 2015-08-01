@@ -9,7 +9,7 @@ Resumen
 
  * Módulos de Visual Basic: 7
 
- * Líneas de código VB: 801
+ * Líneas de código VB: 800
 
 Detalle
 =======
@@ -48,7 +48,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Lib] 43 líneas de código.
+[Lib] 42 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '---------------------------------------------------------------------------------------
 ' Librería: Exporta una representación textual de un libro de Excel
@@ -90,8 +90,7 @@ End Function
 'Purpose: Prueba para exportar el libro actual.
 '----------------------------------------------------------------------------------------------------
 Public Sub ExportActiveWorkbook()
-    Dim Exporter As New ExportClass
-    Exporter.Main ActiveWorkbook, True
+    Lib.Main ActiveWorkbook, True
 End Sub
 \\\--- END OF MODULE ---
 
