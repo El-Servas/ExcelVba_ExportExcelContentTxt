@@ -7,9 +7,9 @@ Resumen
 
  * Nombres Definidos: 0
 
- * Módulos de Visual Basic: 7
+ * Módulos de Visual Basic: 5
 
- * Líneas de código VB: 800
+ * Líneas de código VB: 747
 
 Detalle
 =======
@@ -23,15 +23,13 @@ Contenido:
 
 Nombres:
 
-Nombre del proyecto VB: [Lib_ExportToTxt]
+Nombre del proyecto VB: [ExportToTxt]
 
 Módulos VBA:
  [ThisWorkbook] Tipo: 100
  [Sheet1] Tipo: 100
- [Lib] Tipo: 1
- [Plantillas] Tipo: 1
+ [Main] Tipo: 1
  [ExportClass] Tipo: 2
- [LibClass] Tipo: 2
  [DvInfoClass] Tipo: 2
 
 Codigo:
@@ -40,7 +38,7 @@ Codigo:
 Option Explicit
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-Lib.Main ThisWorkbook
+Main.Main ThisWorkbook
 End Sub
 
 \\\--- END OF MODULE ---
@@ -49,70 +47,31 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Lib] 42 líneas de código.
+[Main] 24 líneas de código.
 ///--- BEGINNING OF MODULE ---
-'---------------------------------------------------------------------------------------
-' Librería: Exporta una representación textual de un libro de Excel
-'---------------------------------------------------------------------------------------
+'=======================================================================================
+' Exporta una representación textual del contenido de un libro de Excel.
+'=======================================================================================
 
 Option Explicit
-Public Const VERSION As String = "POST v2.11.1"
-'---------------------------------------------------------------------------------------
-Public Const LIB_NAME As String = "Lib_ExportToTxt"
+
+Public Const VERSION As String = "v3.0.0-SNAPSHOT (Standalone)"
+Public Const LIB_NAME As String = "ExportToTxt"
 Public Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
 
 Public ErrNum, ErrDesc
 
+'Exportar el libro activo.
 '----------------------------------------------------------------------------------------------------
-'Purpose: Punto de entrada principal a la librería.
+Public Sub ExportActiveWorkbook()
+    Main ActiveWorkbook, True
+End Sub
+
+'Punto de entrada principal a la librería.
 '----------------------------------------------------------------------------------------------------
 Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
     Dim Exporter As New ExportClass
     Exporter.Main bookToExport, visual
-End Sub
-
-'----------------------------------------------------------------------------------------------------
-'Purpose: Regresa el objeto real de librería
-'----------------------------------------------------------------------------------------------------
-Public Function GetLib()
-Debug.Print "> Inicio Lib.GetLib()"
-On Error GoTo Outer_Error
-
-    Set GetLib = New LibClass
-On Error GoTo 0
-Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
-    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!Lib.GetLib] " & Err.Number & ". " & Err.Description
-    Debug.Print "> Fin Lib.GetLib()": Debug.Print
-    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
-    ErrNum = Err.Number: ErrDesc = Err.Description
-End Function
-
-'----------------------------------------------------------------------------------------------------
-'Purpose: Prueba para exportar el libro actual.
-'----------------------------------------------------------------------------------------------------
-Public Sub ExportActiveWorkbook()
-    Lib.Main ActiveWorkbook, True
-End Sub
-\\\--- END OF MODULE ---
-
-[Plantillas] 17 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
-Public ErrNum, ErrDesc 'Para que compile el proyecto.
-
-Private Sub PlantillaParaDelegado()
-On Error GoTo DelegateError
-    'Código aquí.
-    'Si el delegado regresa valor, es buena idea asignarlo de inmediato, si se tiene un valor default.
-DelegateError:
-    ErrNum = Err.Number: ErrDesc = Err.Description 'ErrNum y ErrDesc deben de estar definidas a nivel módulo.
-End Sub
-
-Private Sub PlantillaParaLlamarADelegado()
-    'ErrNum y ErrDesc deben de estar definidas y accesibles en el módulo donde esté el delegado (Si fuera otro)
-    ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
-    If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
 End Sub
 \\\--- END OF MODULE ---
 
@@ -627,28 +586,6 @@ Sub MensajeFinal()
 End Sub
 \\\--- END OF MODULE ---
 
-[LibClass] 18 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
-Public ErrNum, ErrDesc
-
-Public Function Init() As Object
-Debug.Print "> Inicio LibClass.Init()"
-On Error GoTo Outer_Error
-
-    'Set Init = Me
-    Set Init = New ExportClass
-On Error GoTo 0
-Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
-    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!LibClass.Init] " & Err.Number & ". " & Err.Description
-    Debug.Print "> Fin LibClass.Init()": Debug.Print
-    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
-    ErrNum = Err.Number: ErrDesc = Err.Description
-End Function
-
-\\\--- END OF MODULE ---
-
 [DvInfoClass] 210 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
@@ -865,4 +802,4 @@ End Function
 
 
 ** Fin del proceso de exportación. **
-Lib_ExportToTxt [ExportToTxt.xls] POST v2.11.1
+ExportToTxt [ExportToTxt.xls] v3.0.0-SNAPSHOT (Standalone)
