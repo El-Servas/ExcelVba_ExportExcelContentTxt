@@ -2,14 +2,10 @@ Representación Textual del archivo de Excel: "ExportToTxt.xls"
 
 Resumen
 =======
-
  * Hojas: 1
-
  * Nombres Definidos: 0
-
  * Módulos de Visual Basic: 5
-
- * Líneas de código VB: 747
+ * Líneas de código VB: 713
 
 Detalle
 =======
@@ -75,7 +71,7 @@ Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 507 líneas de código.
+[ExportClass] 473 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -108,10 +104,10 @@ Private Const ERROR_2 As String = TOKEN_BOOK_IN_AUTOSTART
 Private Const AUTO_START_PATH_PREFIX As String = "AppData"
 Private Const AUTO_START_PATH_SUFFIX As String = "Microsoft\Excel\XLSTART"
 
-Private RH 'La clase RunHelper.
 Private FSO As New Scripting.FileSystemObject
+Private DvInfo As New DvInfoClass 'Clase que nos va a dar la información de DataValidation.
+
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
-Private DvInfo As DvInfoClass 'Clase que nos va a dar la información de DataValidation.
 Private flVisual As Boolean 'Bandera que define si la ejecución es con confirmación visual.
 
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
@@ -124,12 +120,6 @@ Private flBookInAutoStartPath As Boolean
 
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
-Private Sub Class_Initialize()
-    'Set RH = Application.Run("Personal.xlsb!GetRunHelper")
-    Set FSO = New FileSystemObject
-    Set DvInfo = New DvInfoClass
-End Sub
-
 Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 On Error GoTo Catch
     Set BTE = bookToExport
@@ -141,7 +131,7 @@ On Error GoTo Catch
     
     If Not flBookInAutoStartPath Then
         Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
-        SaveSettings
+        SaveAppSettings
         StartTime = Date + Time
         
         GenResumen
@@ -151,8 +141,6 @@ On Error GoTo Catch
         GenModulos
         
         MensajeFinal
-    
-        'Fin del proceso. Confirmación visual si aplica.
         If flVisual Then Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
     End If
 Catch:
@@ -164,12 +152,11 @@ Catch:
         If Not StreamClosed() Then Log MensajeDeError
     End If
     
-    RestoreSettings
+    RestoreAppSettings
     If Not Stream Is Nothing Then Stream.Close
 End Sub
 
-'----------------------------------------------------------------------------------------------------
-'Purpose: Realiza unas verificaciones antes de iniciar el proceso de exportación.
+'Realiza verificaciones antes de iniciar el proceso de exportación.
 '----------------------------------------------------------------------------------------------------
 Sub PreFlight()
     'Construye y revisa la ruta de exclusión.
@@ -185,6 +172,8 @@ Sub PreFlight()
     VBProjectIsProtected = BTE.VBProject.Protection = vbext_pp_locked
 End Sub
 
+'Obtiene el nombre del archivo a generar.
+'----------------------------------------------------------------------------------------------------
 Function GetTXTFileName() As String
     Dim NombreDelArchivo As String _
     , Ruta As String _
@@ -197,18 +186,19 @@ Function GetTXTFileName() As String
     GetTXTFileName = NombreCompleto
 End Function
 
-'----------------------------------------------------------------------------------------------------
-'Purpose: 'Despliega la confirmación visual inicial y regresa si se continúa o se cancela el proceso.
+'Despliega confirmación visual inicial con posibilidad de cancelar
 '----------------------------------------------------------------------------------------------------
 Function ConfirmarEjecucion() As Boolean
     'Preparamos el mensaje, aprovechando que ya se hizo el PreFlight.
     Dim MensajeConfirmacion As String
+    
     'Intro del mensaje con el nombre del archivo a exportar.
     MensajeConfirmacion = "Inicio del proceso de exportación a texto del archivo:" & vbCrLf _
         & BTE.name & vbCrLf & vbCrLf _
         & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." & vbCrLf & vbCrLf
     
     MensajeConfirmacion = MensajeConfirmacion & "Verificación previa:" & vbCrLf
+    
     'Libro en la ruta AutoStart
     If flBookInAutoStartPath Then
         MensajeConfirmacion = MensajeConfirmacion & "* " & UCase(TOKEN_BOOK_IN_AUTOSTART) & vbCrLf
@@ -233,8 +223,7 @@ Function ConfirmarEjecucion() As Boolean
     End Select
 End Function
 
-'----------------------------------------------------------------------------------------------------
-'Purpose: Construye un string que va a identificar la librería, el archivo que la contiene y la versión.
+'string que identifica la librería, el archivo que la contiene y la versión.
 '----------------------------------------------------------------------------------------------------
 Function GenVersionString() As String
     GenVersionString = LIB_NAME & " [" & ThisWorkbook.name & "] " & VERSION
@@ -245,54 +234,27 @@ End Function
 '====================================================================================================
 
 Sub GenResumen()
-    ' - Nombre del archivo
-    GenEncabezado
+    Log TOKEN_HEADER & """" & BTE.name & """" ' Encabezado (Nombre del archivo)
+    If flVisual Then Log "Fecha y hora de generación: " & Date + Time
+    Log
     
     Log "Resumen" & vbCrLf & "======="
-    Log
-    
-    Dim NumeroHojas As Integer: NumeroHojas = GetNumHojas
-    Log " * Hojas: " & NumeroHojas
-    Log
-    
-    Dim NumeroNombresDefinidos As Integer: NumeroNombresDefinidos = GetNumNombres
-    Log " * Nombres Definidos: " & NumeroNombresDefinidos
-    Log
+    Log " * Hojas: " & BTE.Worksheets.Count
+    Log " * Nombres Definidos: " & BTE.Names.Count
     
     If Not VBProjectIsProtected Then
-        Dim NumeroModulosVB As Integer: NumeroModulosVB = GetNumModulosVB
-        Log " * Módulos de Visual Basic: " & NumeroModulosVB
-        Log
-        
-        Dim NumeroLineasCodigo As Integer: NumeroLineasCodigo = GetNumLineas
-        Log " * Líneas de código VB: " & NumeroLineasCodigo
+        Log " * Módulos de Visual Basic: " & BTE.VBProject.VBComponents.Count
+        Log " * Líneas de código VB: " & GetNumLineas()
     Else
         Log TOKEN_VBPROJECT_PROTECTED
     End If
     Log
-    
     Log "Detalle" & vbCrLf & "======="
     Log
 End Sub
 
-Sub GenEncabezado()
-    Log TOKEN_HEADER & """" & BTE.name & """"
-    If flVisual Then Log "Fecha y hora de generación: " & Date + Time
-    Log
-End Sub
-
-Function GetNumHojas() As Integer
-    GetNumHojas = BTE.Worksheets.Count
-End Function
-
-Function GetNumNombres() As Integer
-    GetNumNombres = BTE.Names.Count
-End Function
-
-Function GetNumModulosVB() As Integer
-    GetNumModulosVB = BTE.VBProject.VBComponents.Count
-End Function
-
+'Obtiene el número total de líneas VBA.
+'----------------------------------------------------------------------------------------------------
 Function GetNumLineas() As Integer
     'Iteramos los componentes para contar las líneas.
     Dim NumLineas As Integer
@@ -553,14 +515,14 @@ IsClosed:
     StreamClosed = True
 End Function
 
-Sub SaveSettings()
+Sub SaveAppSettings()
     On Error Resume Next: Application.Calculation = xlCalculationManual: On Error GoTo 0
     Application.ScreenUpdating = False
     Application.EnableEvents = False
     'Application.Interactive = False
 End Sub
 
-Sub RestoreSettings()
+Sub RestoreAppSettings()
     On Error Resume Next: Application.Calculation = xlCalculationAutomatic: On Error GoTo 0
     Application.Interactive = True
     Application.ScreenUpdating = True
