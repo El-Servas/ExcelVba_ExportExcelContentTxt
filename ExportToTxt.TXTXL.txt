@@ -5,7 +5,7 @@ Resumen
  * Hojas: 1
  * Nombres Definidos: 0
  * Módulos de Visual Basic: 5
- * Líneas de código VB: 726
+ * Líneas de código VB: 739
 
 Detalle
 =======
@@ -75,7 +75,7 @@ Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 486 líneas de código.
+[ExportClass] 499 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -122,6 +122,12 @@ Private StartTime As Date _
 Private ExpandedAutoStartPath As String
 Private flBookInAutoStartPath As Boolean
 
+Private Enum Formato
+    Default
+    Bloques
+End Enum
+Private FormatoAUsar As Formato
+
 Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
 Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
@@ -129,6 +135,8 @@ On Error GoTo Catch
     Set BTE = bookToExport
     flVisual = visual
     PreFlight
+    FormatoAUsar = Formato.Default
+    'FormatoAUsar = Formato.Bloques
    
     'Inicio del proceso. Confirmación visual si aplica.
     If flVisual Then If Not ConfirmarEjecucion Then Err.Raise vbObjectError + 1, , ERROR_1
@@ -412,7 +420,12 @@ On Error GoTo DelegateError
     
     'Procesamos las celdas.
     Log "[" & sheet.name & "]" & Mensaje
-    IteraCeldas sheet, "ProcesaCelda"
+    Select Case FormatoAUsar
+        Case Formato.Default
+            IteraCeldas sheet, "ProcesaCelda"
+        Case Formato.Bloques
+            'TO DO
+    End Select
     Log
     
     'Reprotegemos si es necesario
