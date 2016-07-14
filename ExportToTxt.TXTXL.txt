@@ -5,7 +5,7 @@ Resumen
  * Hojas: 1
  * Nombres Definidos: 0
  * Módulos de Visual Basic: 5
- * Líneas de código VB: 739
+ * Líneas de código VB: 777
 
 Detalle
 =======
@@ -15,11 +15,33 @@ Hojas:
 
 Contenido:
 [Sheet1]
-[A1] \ExportToTxt\
-[A3] \True\
-[A4] \False\
-[A5] \=TODAY()\
-[A6] \13/07/2016\
+Bloques: 4
+
+@ A1 [1x1]
+> ExportToTxt
+
+@ D1 [1x1]
+> ABCD
+
+@ C1 [2x1]
+> ABCD
+> ABCD
+
+@ A3 [4x2]
+> True
+> False
+> =TODAY()
+> 13/07/2016
+> =RAND()
+ DataValidation: Número Entero. [Operador:"Igual a" Formula1:"0" ]
+ Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
+ Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Grave ] 
+ OmitirBlancos:True DatoActualEsVálido:False 
+
+> =RAND()
+> =RAND()
+> =RAND()
+
 
 Nombres:
 
@@ -75,7 +97,7 @@ Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 499 líneas de código.
+[ExportClass] 537 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -136,7 +158,7 @@ On Error GoTo Catch
     flVisual = visual
     PreFlight
     FormatoAUsar = Formato.Default
-    'FormatoAUsar = Formato.Bloques
+    FormatoAUsar = Formato.Bloques
    
     'Inicio del proceso. Confirmación visual si aplica.
     If flVisual Then If Not ConfirmarEjecucion Then Err.Raise vbObjectError + 1, , ERROR_1
@@ -424,7 +446,7 @@ On Error GoTo DelegateError
         Case Formato.Default
             IteraCeldas sheet, "ProcesaCelda"
         Case Formato.Bloques
-            'TO DO
+            ExportaBloques sheet
     End Select
     Log
     
@@ -466,6 +488,7 @@ On Error GoTo DelegateError
         Contenido = "**FÓRMULA INACCESIBLE**"
     ElseIf cell.Formula <> "" Then 'Fórmula accesible, pero que no esté vacía.
         CeldaSeProcesa = True
+        Contenido = ObtenerContenidoSegunFormato(cell)
     End If
     
     If CeldaSeProcesa Then
@@ -473,10 +496,16 @@ On Error GoTo DelegateError
         If iterationIndex Mod SHEET_TITLE_CELL_LISTING_THRESHOLD = 0 And iterationIndex <> 0 Then
             Log "[" & cell.Parent.name & "]"
         End If
-        Direccion = cell.Address(False, False): Direccion = "[" & Direccion & "] "
+        
+        Select Case FormatoAUsar
+            Case Formato.Default
+                Direccion = cell.Address(False, False): Direccion = "[" & Direccion & "] "
+                Contenido = "\" & Contenido & "\"
+            Case Formato.Bloques
+                Contenido = "> " & Contenido & ""
+        End Select
         NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
-        Contenido = ObtenerContenidoSegunFormato(cell)
-        Contenido = "\" & Contenido & "\"
+        
         Log Direccion & NombreDefinido & Contenido
         
         'Reportamos si la celda tiene DV o no:
@@ -557,6 +586,7 @@ Sub RestoreAppSettings()
     Application.Interactive = True
     Application.ScreenUpdating = True
     Application.EnableEvents = True
+    Application.StatusBar = False
 End Sub
 
 '----------------------------------------------------------------------------------------------------
@@ -575,6 +605,36 @@ Sub MensajeFinal()
     
     Log MensajeFinal
     Log GenVersionString()
+End Sub
+
+'Experimento para los "Bloques"
+Sub ExportaBloques(sheet As Worksheet)
+    'Determinar el número de bloques
+    Dim rg As Range, blk As Range
+    Set rg = Union(sheet.Cells.SpecialCells(xlCellTypeConstants), _
+                   sheet.Cells.SpecialCells(xlCellTypeFormulas))
+    Dim nBloques: nBloques = rg.Areas.Count
+    Log "Bloques: " & nBloques
+    Log
+    
+    For Each blk In rg.Areas
+        ExportaBloque blk
+        DoEvents
+    Next
+End Sub
+
+Sub ExportaBloque(blk As Range)
+    
+    Log "@ " & blk.Cells(1).Address(0, 0) & " [" & blk.Rows.Count & "x" & blk.Columns.Count & "]"
+    
+    Dim c As Integer, r As Integer
+    
+    For c = 1 To blk.Columns.Count
+        For r = 1 To blk.Rows.Count
+            ProcesaCelda blk(r, c), 0
+        Next
+    Next
+    Log
 End Sub
 \\\--- END OF MODULE ---
 
