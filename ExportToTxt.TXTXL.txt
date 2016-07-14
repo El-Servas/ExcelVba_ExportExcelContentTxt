@@ -5,7 +5,7 @@ Resumen
  * Hojas: 1
  * Nombres Definidos: 0
  * Módulos de Visual Basic: 5
- * Líneas de código VB: 777
+ * Líneas de código VB: 778
 
 Detalle
 =======
@@ -15,31 +15,12 @@ Hojas:
 
 Contenido:
 [Sheet1]
-Bloques: 4
+Bloques: 2
 
 @ A1 [1x1]
 > ExportToTxt
 
-@ D1 [1x1]
-> ABCD
-
-@ C1 [2x1]
-> ABCD
-> ABCD
-
-@ A3 [4x2]
-> True
-> False
-> =TODAY()
-> 13/07/2016
-> =RAND()
- DataValidation: Número Entero. [Operador:"Igual a" Formula1:"0" ]
- Mensaje=[Mostrar:True Titulo:"" Mensaje:"" ] 
- Advertencia=[Mostrar:True Titulo:"" Mensaje:"" Estilo:Grave ] 
- OmitirBlancos:True DatoActualEsVálido:False 
-
-> =RAND()
-> =RAND()
+@ A3 [1x1]
 > =RAND()
 
 
@@ -97,7 +78,7 @@ Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 537 líneas de código.
+[ExportClass] 538 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -611,6 +592,7 @@ End Sub
 Sub ExportaBloques(sheet As Worksheet)
     'Determinar el número de bloques
     Dim rg As Range, blk As Range
+    'BUGWATCH: Cuando no hay celdas de alguno de los tipos, ocurre un error.
     Set rg = Union(sheet.Cells.SpecialCells(xlCellTypeConstants), _
                    sheet.Cells.SpecialCells(xlCellTypeFormulas))
     Dim nBloques: nBloques = rg.Areas.Count
