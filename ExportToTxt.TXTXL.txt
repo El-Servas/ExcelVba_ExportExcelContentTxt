@@ -5,7 +5,7 @@ Resumen
  * Hojas: 1
  * Nombres Definidos: 0
  * Módulos de Visual Basic: 5
- * Líneas de código VB: 713
+ * Líneas de código VB: 726
 
 Detalle
 =======
@@ -16,6 +16,10 @@ Hojas:
 Contenido:
 [Sheet1]
 [A1] \ExportToTxt\
+[A3] \True\
+[A4] \False\
+[A5] \=TODAY()\
+[A6] \13/07/2016\
 
 Nombres:
 
@@ -71,7 +75,7 @@ Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 473 líneas de código.
+[ExportClass] 486 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -449,7 +453,6 @@ On Error GoTo DelegateError
         Contenido = "**FÓRMULA INACCESIBLE**"
     ElseIf cell.Formula <> "" Then 'Fórmula accesible, pero que no esté vacía.
         CeldaSeProcesa = True
-        Contenido = cell.Formula
     End If
     
     If CeldaSeProcesa Then
@@ -459,6 +462,7 @@ On Error GoTo DelegateError
         End If
         Direccion = cell.Address(False, False): Direccion = "[" & Direccion & "] "
         NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
+        Contenido = ObtenerContenidoSegunFormato(cell)
         Contenido = "\" & Contenido & "\"
         Log Direccion & NombreDefinido & Contenido
         
@@ -472,6 +476,19 @@ On Error GoTo DelegateError
     End If
 DelegateError:
     ErrNum = Err.Number: ErrDesc = Err.Description
+End Function
+
+'Masajea el contenido que se emite segun el formato del contenido de la celda.
+Function ObtenerContenidoSegunFormato(cell As Range)
+    Dim r: r = cell.Formula 'Valor por default si no cae en ningun caso especial
+    
+    'Fecha
+    If IsNumeric(cell.Formula) And IsDate(cell.value) Then r = cell.value
+    
+    'Boolean
+    If UCase(cell.Formula) = "TRUE" Or UCase(cell.Formula) = "FALSE" Then r = StrConv(cell.Formula, vbProperCase)
+    
+    ObtenerContenidoSegunFormato = r
 End Function
 
 'Delegate caller
