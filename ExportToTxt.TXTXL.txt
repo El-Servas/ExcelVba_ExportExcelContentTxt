@@ -3,9 +3,9 @@ Representación Textual del archivo de Excel: "ExportToTxt.xls"
 Resumen
 =======
  * Hojas: 1
- * Nombres Definidos: 0
+ * Nombres Definidos: 1
  * Módulos de Visual Basic: 5
- * Líneas de código VB: 791
+ * Líneas de código VB: 792
 
 Detalle
 =======
@@ -16,8 +16,10 @@ Hojas:
 Contenido:
 [Sheet1]
 [A1] \ExportToTxt\
+[C1] (VERSION) \v3.0.0-SNAPSHOT (Standalone)\
 
 Nombres:
+ [VERSION] =Sheet1!$C$1
 
 Nombre del proyecto VB: [ExportToTxt]
 
@@ -43,7 +45,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Main] 37 líneas de código.
+[Main] 38 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '=======================================================================================
 ' Exporta una representación textual del contenido de un libro de Excel.
@@ -51,7 +53,7 @@ End Sub
 
 Option Explicit
 
-Public Const VERSION As String = "v3.0.0-SNAPSHOT (Standalone)"
+Public VERSION As String
 Public Const LIB_NAME As String = "ExportToTxt"
 Public Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
 
@@ -66,6 +68,7 @@ End Sub
 'Punto de entrada principal a la librería.
 '----------------------------------------------------------------------------------------------------
 Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
+    VERSION = Range("VERSION")
     Dim Exporter As New ExportClass
     Exporter.Main bookToExport, visual
 End Sub
