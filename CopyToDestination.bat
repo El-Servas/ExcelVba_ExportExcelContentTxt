@@ -1,1 +1,1 @@
-copy "ExportToTxt.*" "%appdata%\Microsoft\Excel\MyLibs\ExportToTxt"
+copy "ExportToTxt.x*" "%appdata%\Microsoft\Excel\XLSTART"
