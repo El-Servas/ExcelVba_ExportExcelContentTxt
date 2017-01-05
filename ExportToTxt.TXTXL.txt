@@ -68,7 +68,7 @@ End Sub
 'Punto de entrada principal a la librería.
 '----------------------------------------------------------------------------------------------------
 Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
-    VERSION = Range("VERSION")
+    VERSION = ThisWorkbook.Names("VERSION").RefersToRange
     Dim Exporter As New ExportClass
     Exporter.Main bookToExport, visual
 End Sub
