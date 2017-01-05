@@ -15,14 +15,7 @@ Hojas:
 
 Contenido:
 [Sheet1]
-Bloques: 2
-
-@ A1 [1x1]
-> ExportToTxt
-
-@ A3 [1x1]
-> =RAND()
-
+[A1] \ExportToTxt\
 
 Nombres:
 
@@ -139,7 +132,7 @@ On Error GoTo Catch
     flVisual = visual
     PreFlight
     FormatoAUsar = Formato.Default
-    FormatoAUsar = Formato.Bloques
+    'FormatoAUsar = Formato.Bloques
    
     'Inicio del proceso. Confirmación visual si aplica.
     If flVisual Then If Not ConfirmarEjecucion Then Err.Raise vbObjectError + 1, , ERROR_1
@@ -455,7 +448,7 @@ End Sub
 '====================================================================================================
 
 'Delegate
-Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
+Function ProcesaCelda(cell As Range, iterationIndex As Long) As Long
 On Error GoTo DelegateError
     ProcesaCelda = iterationIndex 'Inmediatamente establecemos el valor
     
@@ -517,7 +510,7 @@ End Function
 'Delegate caller
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
     Dim cell As Range, column As Range
-    Dim ix As Integer
+    Dim ix As Long
     ix = 0
     For Each column In sheet.UsedRange.Cells.Columns
         For Each cell In column.Cells
