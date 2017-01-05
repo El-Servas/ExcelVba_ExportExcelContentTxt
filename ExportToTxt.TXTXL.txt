@@ -2,14 +2,10 @@ Representación Textual del archivo de Excel: "ExportToTxt.xls"
 
 Resumen
 =======
-
  * Hojas: 1
-
- * Nombres Definidos: 0
-
- * Módulos de Visual Basic: 7
-
- * Líneas de código VB: 794
+ * Nombres Definidos: 1
+ * Módulos de Visual Basic: 5
+ * Líneas de código VB: 792
 
 Detalle
 =======
@@ -19,18 +15,19 @@ Hojas:
 
 Contenido:
 [Sheet1]
+[A1] \ExportToTxt\
+[C1] (VERSION) \v3.0.0\
 
 Nombres:
+ [VERSION] =Sheet1!$C$1
 
-Nombre del proyecto VB: [Lib_ExportToTxt]
+Nombre del proyecto VB: [ExportToTxt]
 
 Módulos VBA:
  [ThisWorkbook] Tipo: 100
  [Sheet1] Tipo: 100
- [Lib] Tipo: 1
- [Plantillas] Tipo: 1
+ [Main] Tipo: 1
  [ExportClass] Tipo: 2
- [LibClass] Tipo: 2
  [DvInfoClass] Tipo: 2
 
 Codigo:
@@ -39,7 +36,7 @@ Codigo:
 Option Explicit
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-Lib.Main ThisWorkbook
+Main.Main ThisWorkbook
 End Sub
 
 \\\--- END OF MODULE ---
@@ -48,68 +45,49 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Lib] 36 líneas de código.
+[Main] 38 líneas de código.
 ///--- BEGINNING OF MODULE ---
-'---------------------------------------------------------------------------------------
-' Librería: Exporta una representación textual de un libro de Excel
-'---------------------------------------------------------------------------------------
+'=======================================================================================
+' Exporta una representación textual del contenido de un libro de Excel.
+'=======================================================================================
 
 Option Explicit
-Public Const VERSION As String = "v2.11.1"
-'---------------------------------------------------------------------------------------
-Public Const LIB_NAME As String = "Lib_ExportToTxt"
+
+Public VERSION As String
+Public Const LIB_NAME As String = "ExportToTxt"
 Public Const LIB_FRIENDLY_NAME As String = "Exportación a Texto"
 
 Public ErrNum, ErrDesc
 
+'Exportar el libro activo.
 '----------------------------------------------------------------------------------------------------
-'Purpose: Punto de entrada principal a la librería.
+Public Sub ExportActiveWorkbook()
+    Main ActiveWorkbook, True
+End Sub
+
+'Punto de entrada principal a la librería.
 '----------------------------------------------------------------------------------------------------
 Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
+    VERSION = Range("VERSION")
     Dim Exporter As New ExportClass
     Exporter.Main bookToExport, visual
 End Sub
 
-'----------------------------------------------------------------------------------------------------
-'Purpose: Regresa el objeto real de librería
-'----------------------------------------------------------------------------------------------------
-Public Function GetLib()
-Debug.Print "> Inicio Lib.GetLib()"
-On Error GoTo Outer_Error
-
-    Set GetLib = New LibClass
-On Error GoTo 0
-Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
-    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!Lib.GetLib] " & Err.Number & ". " & Err.Description
-    Debug.Print "> Fin Lib.GetLib()": Debug.Print
-    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
-    ErrNum = Err.Number: ErrDesc = Err.Description
-End Function
-
-\\\--- END OF MODULE ---
-
-[Plantillas] 17 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
-
-Public ErrNum, ErrDesc 'Para que compile el proyecto.
-
-Sub PlantillaParaDelegado()
-On Error GoTo DelegateError
-    'Código aquí.
-    'Si el delegado regresa valor, es buena idea asignarlo de inmediato, si se tiene un valor default.
-DelegateError:
-    ErrNum = Err.Number: ErrDesc = Err.Description 'ErrNum y ErrDesc deben de estar definidas a nivel módulo.
-End Sub
-
-Sub PlantillaParaLlamarADelegado()
-    'ErrNum y ErrDesc deben de estar definidas y accesibles en el módulo donde esté el delegado (Si fuera otro)
-    ErrNum = 0: Application.Run "NombreDelDelegado" ',Más, parámetros, etc
-    If ErrNum <> 0 Then Err.Raise ErrNum, , ErrDesc
+'Para generar el archivo PRD con la bandera de Addin Activada.
+Public Sub GenAddIn()
+    Dim PrdName
+    PrdName = Left(ThisWorkbook.FullName, (InStrRev(ThisWorkbook.FullName, ".", -1, vbTextCompare) - 1)) 'Sin Extensión.
+    PrdName = PrdName & "-PRD"
+    
+    ThisWorkbook.IsAddin = True
+    Application.DisplayAlerts = False
+    ThisWorkbook.SaveAs PrdName, ThisWorkbook.FileFormat
+    Application.DisplayAlerts = True
+    ThisWorkbook.Close
 End Sub
 \\\--- END OF MODULE ---
 
-[ExportClass] 507 líneas de código.
+[ExportClass] 538 líneas de código.
 ///--- BEGINNING OF MODULE ---
 Option Explicit
 '---------------------------------------------------------------------------------------
@@ -142,10 +120,10 @@ Private Const ERROR_2 As String = TOKEN_BOOK_IN_AUTOSTART
 Private Const AUTO_START_PATH_PREFIX As String = "AppData"
 Private Const AUTO_START_PATH_SUFFIX As String = "Microsoft\Excel\XLSTART"
 
-Private RH 'La clase RunHelper.
 Private FSO As New Scripting.FileSystemObject
+Private DvInfo As New DvInfoClass 'Clase que nos va a dar la información de DataValidation.
+
 Private Stream As TextStream 'El stream donde vamos a escribir el archivo
-Private DvInfo As DvInfoClass 'Clase que nos va a dar la información de DataValidation.
 Private flVisual As Boolean 'Bandera que define si la ejecución es con confirmación visual.
 
 Private BTE As Workbook '(BookToExport) Referencia al libro que vamos a exportar.
@@ -156,26 +134,28 @@ Private StartTime As Date _
 Private ExpandedAutoStartPath As String
 Private flBookInAutoStartPath As Boolean
 
-Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
+Private Enum Formato
+    Default
+    Bloques
+End Enum
+Private FormatoAUsar As Formato
 
-Private Sub Class_Initialize()
-    Set RH = Application.Run("Personal.xlsb!GetRunHelper")
-    Set FSO = RH.GetUtils().GetFSO()
-    Set DvInfo = New DvInfoClass
-End Sub
+Private ErrNum, ErrDesc 'Auxiliares para mantener los detalles del error si ocurre durante la ejecución de un delegado.
 
 Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
 On Error GoTo Catch
     Set BTE = bookToExport
     flVisual = visual
     PreFlight
+    FormatoAUsar = Formato.Default
+    'FormatoAUsar = Formato.Bloques
    
     'Inicio del proceso. Confirmación visual si aplica.
     If flVisual Then If Not ConfirmarEjecucion Then Err.Raise vbObjectError + 1, , ERROR_1
     
     If Not flBookInAutoStartPath Then
         Set Stream = FSO.CreateTextFile(GetTXTFileName(), True, False)
-        SaveSettings
+        SaveAppSettings
         StartTime = Date + Time
         
         GenResumen
@@ -185,8 +165,6 @@ On Error GoTo Catch
         GenModulos
         
         MensajeFinal
-    
-        'Fin del proceso. Confirmación visual si aplica.
         If flVisual Then Call MsgBox("Proceso terminado en " & EllapsedMinutes & " minutos.", vbInformation Or vbDefaultButton1, TOKEN_MESSAGEBOX_TITLE)
     End If
 Catch:
@@ -198,12 +176,11 @@ Catch:
         If Not StreamClosed() Then Log MensajeDeError
     End If
     
-    RestoreSettings
+    RestoreAppSettings
     If Not Stream Is Nothing Then Stream.Close
 End Sub
 
-'----------------------------------------------------------------------------------------------------
-'Purpose: Realiza unas verificaciones antes de iniciar el proceso de exportación.
+'Realiza verificaciones antes de iniciar el proceso de exportación.
 '----------------------------------------------------------------------------------------------------
 Sub PreFlight()
     'Construye y revisa la ruta de exclusión.
@@ -219,6 +196,8 @@ Sub PreFlight()
     VBProjectIsProtected = BTE.VBProject.Protection = vbext_pp_locked
 End Sub
 
+'Obtiene el nombre del archivo a generar.
+'----------------------------------------------------------------------------------------------------
 Function GetTXTFileName() As String
     Dim NombreDelArchivo As String _
     , Ruta As String _
@@ -231,18 +210,19 @@ Function GetTXTFileName() As String
     GetTXTFileName = NombreCompleto
 End Function
 
-'----------------------------------------------------------------------------------------------------
-'Purpose: 'Despliega la confirmación visual inicial y regresa si se continúa o se cancela el proceso.
+'Despliega confirmación visual inicial con posibilidad de cancelar
 '----------------------------------------------------------------------------------------------------
 Function ConfirmarEjecucion() As Boolean
     'Preparamos el mensaje, aprovechando que ya se hizo el PreFlight.
     Dim MensajeConfirmacion As String
+    
     'Intro del mensaje con el nombre del archivo a exportar.
     MensajeConfirmacion = "Inicio del proceso de exportación a texto del archivo:" & vbCrLf _
         & BTE.name & vbCrLf & vbCrLf _
         & "Dependiento del tamaño y complejidad del libro, puede tardar algunos minutos." & vbCrLf & vbCrLf
     
     MensajeConfirmacion = MensajeConfirmacion & "Verificación previa:" & vbCrLf
+    
     'Libro en la ruta AutoStart
     If flBookInAutoStartPath Then
         MensajeConfirmacion = MensajeConfirmacion & "* " & UCase(TOKEN_BOOK_IN_AUTOSTART) & vbCrLf
@@ -267,8 +247,7 @@ Function ConfirmarEjecucion() As Boolean
     End Select
 End Function
 
-'----------------------------------------------------------------------------------------------------
-'Purpose: Construye un string que va a identificar la librería, el archivo que la contiene y la versión.
+'string que identifica la librería, el archivo que la contiene y la versión.
 '----------------------------------------------------------------------------------------------------
 Function GenVersionString() As String
     GenVersionString = LIB_NAME & " [" & ThisWorkbook.name & "] " & VERSION
@@ -279,54 +258,27 @@ End Function
 '====================================================================================================
 
 Sub GenResumen()
-    ' - Nombre del archivo
-    GenEncabezado
+    Log TOKEN_HEADER & """" & BTE.name & """" ' Encabezado (Nombre del archivo)
+    If flVisual Then Log "Fecha y hora de generación: " & Date + Time
+    Log
     
     Log "Resumen" & vbCrLf & "======="
-    Log
-    
-    Dim NumeroHojas As Integer: NumeroHojas = GetNumHojas
-    Log " * Hojas: " & NumeroHojas
-    Log
-    
-    Dim NumeroNombresDefinidos As Integer: NumeroNombresDefinidos = GetNumNombres
-    Log " * Nombres Definidos: " & NumeroNombresDefinidos
-    Log
+    Log " * Hojas: " & BTE.Worksheets.Count
+    Log " * Nombres Definidos: " & BTE.Names.Count
     
     If Not VBProjectIsProtected Then
-        Dim NumeroModulosVB As Integer: NumeroModulosVB = GetNumModulosVB
-        Log " * Módulos de Visual Basic: " & NumeroModulosVB
-        Log
-        
-        Dim NumeroLineasCodigo As Integer: NumeroLineasCodigo = GetNumLineas
-        Log " * Líneas de código VB: " & NumeroLineasCodigo
+        Log " * Módulos de Visual Basic: " & BTE.VBProject.VBComponents.Count
+        Log " * Líneas de código VB: " & GetNumLineas()
     Else
         Log TOKEN_VBPROJECT_PROTECTED
     End If
     Log
-    
     Log "Detalle" & vbCrLf & "======="
     Log
 End Sub
 
-Sub GenEncabezado()
-    Log TOKEN_HEADER & """" & BTE.name & """"
-    If flVisual Then Log "Fecha y hora de generación: " & Date + Time
-    Log
-End Sub
-
-Function GetNumHojas() As Integer
-    GetNumHojas = BTE.Worksheets.Count
-End Function
-
-Function GetNumNombres() As Integer
-    GetNumNombres = BTE.Names.Count
-End Function
-
-Function GetNumModulosVB() As Integer
-    GetNumModulosVB = BTE.VBProject.VBComponents.Count
-End Function
-
+'Obtiene el número total de líneas VBA.
+'----------------------------------------------------------------------------------------------------
 Function GetNumLineas() As Integer
     'Iteramos los componentes para contar las líneas.
     Dim NumLineas As Integer
@@ -480,7 +432,12 @@ On Error GoTo DelegateError
     
     'Procesamos las celdas.
     Log "[" & sheet.name & "]" & Mensaje
-    IteraCeldas sheet, "ProcesaCelda"
+    Select Case FormatoAUsar
+        Case Formato.Default
+            IteraCeldas sheet, "ProcesaCelda"
+        Case Formato.Bloques
+            ExportaBloques sheet
+    End Select
     Log
     
     'Reprotegemos si es necesario
@@ -507,7 +464,7 @@ End Sub
 '====================================================================================================
 
 'Delegate
-Function ProcesaCelda(cell As Range, iterationIndex As Integer) As Integer
+Function ProcesaCelda(cell As Range, iterationIndex As Long) As Long
 On Error GoTo DelegateError
     ProcesaCelda = iterationIndex 'Inmediatamente establecemos el valor
     
@@ -521,7 +478,7 @@ On Error GoTo DelegateError
         Contenido = "**FÓRMULA INACCESIBLE**"
     ElseIf cell.Formula <> "" Then 'Fórmula accesible, pero que no esté vacía.
         CeldaSeProcesa = True
-        Contenido = cell.Formula
+        Contenido = ObtenerContenidoSegunFormato(cell)
     End If
     
     If CeldaSeProcesa Then
@@ -529,9 +486,16 @@ On Error GoTo DelegateError
         If iterationIndex Mod SHEET_TITLE_CELL_LISTING_THRESHOLD = 0 And iterationIndex <> 0 Then
             Log "[" & cell.Parent.name & "]"
         End If
-        Direccion = cell.Address(False, False): Direccion = "[" & Direccion & "] "
+        
+        Select Case FormatoAUsar
+            Case Formato.Default
+                Direccion = cell.Address(False, False): Direccion = "[" & Direccion & "] "
+                Contenido = "\" & Contenido & "\"
+            Case Formato.Bloques
+                Contenido = "> " & Contenido & ""
+        End Select
         NombreDefinido = GetNameOfCell(cell): If NombreDefinido <> "" Then NombreDefinido = "(" & NombreDefinido & ") "
-        Contenido = "\" & Contenido & "\"
+        
         Log Direccion & NombreDefinido & Contenido
         
         'Reportamos si la celda tiene DV o no:
@@ -546,10 +510,23 @@ DelegateError:
     ErrNum = Err.Number: ErrDesc = Err.Description
 End Function
 
+'Masajea el contenido que se emite segun el formato del contenido de la celda.
+Function ObtenerContenidoSegunFormato(cell As Range)
+    Dim r: r = cell.Formula 'Valor por default si no cae en ningun caso especial
+    
+    'Fecha
+    If IsNumeric(cell.Formula) And IsDate(cell.value) Then r = cell.value
+    
+    'Boolean
+    If UCase(cell.Formula) = "TRUE" Or UCase(cell.Formula) = "FALSE" Then r = StrConv(cell.Formula, vbProperCase)
+    
+    ObtenerContenidoSegunFormato = r
+End Function
+
 'Delegate caller
 Sub IteraCeldas(sheet As Worksheet, DelegateName As String)
     Dim cell As Range, column As Range
-    Dim ix As Integer
+    Dim ix As Long
     ix = 0
     For Each column In sheet.UsedRange.Cells.Columns
         For Each cell In column.Cells
@@ -587,18 +564,19 @@ IsClosed:
     StreamClosed = True
 End Function
 
-Sub SaveSettings()
+Sub SaveAppSettings()
     On Error Resume Next: Application.Calculation = xlCalculationManual: On Error GoTo 0
     Application.ScreenUpdating = False
     Application.EnableEvents = False
     'Application.Interactive = False
 End Sub
 
-Sub RestoreSettings()
+Sub RestoreAppSettings()
     On Error Resume Next: Application.Calculation = xlCalculationAutomatic: On Error GoTo 0
     Application.Interactive = True
     Application.ScreenUpdating = True
     Application.EnableEvents = True
+    Application.StatusBar = False
 End Sub
 
 '----------------------------------------------------------------------------------------------------
@@ -618,28 +596,37 @@ Sub MensajeFinal()
     Log MensajeFinal
     Log GenVersionString()
 End Sub
-\\\--- END OF MODULE ---
 
-[LibClass] 18 líneas de código.
-///--- BEGINNING OF MODULE ---
-Option Explicit
+'Experimento para los "Bloques"
+Sub ExportaBloques(sheet As Worksheet)
+    'Determinar el número de bloques
+    Dim rg As Range, blk As Range
+    'BUGWATCH: Cuando no hay celdas de alguno de los tipos, ocurre un error.
+    Set rg = Union(sheet.Cells.SpecialCells(xlCellTypeConstants), _
+                   sheet.Cells.SpecialCells(xlCellTypeFormulas))
+    Dim nBloques: nBloques = rg.Areas.Count
+    Log "Bloques: " & nBloques
+    Log
+    
+    For Each blk In rg.Areas
+        ExportaBloque blk
+        DoEvents
+    Next
+End Sub
 
-Public ErrNum, ErrDesc
-
-Public Function Init() As Object
-Debug.Print "> Inicio LibClass.Init()"
-On Error GoTo Outer_Error
-
-    'Set Init = Me
-    Set Init = New ExportClass
-On Error GoTo 0
-Outer_Error: 'Error Handler v1.1 - 2013-06-19 by +
-    If Err.Number <> 0 Then Debug.Print "[" & ThisWorkbook.name & "!LibClass.Init] " & Err.Number & ". " & Err.Description
-    Debug.Print "> Fin LibClass.Init()": Debug.Print
-    'Descomentar si esta rutina se va a llamar desde otro módulo/proyecto:
-    ErrNum = Err.Number: ErrDesc = Err.Description
-End Function
-
+Sub ExportaBloque(blk As Range)
+    
+    Log "@ " & blk.Cells(1).Address(0, 0) & " [" & blk.Rows.Count & "x" & blk.Columns.Count & "]"
+    
+    Dim c As Integer, r As Integer
+    
+    For c = 1 To blk.Columns.Count
+        For r = 1 To blk.Rows.Count
+            ProcesaCelda blk(r, c), 0
+        Next
+    Next
+    Log
+End Sub
 \\\--- END OF MODULE ---
 
 [DvInfoClass] 210 líneas de código.
@@ -858,4 +845,4 @@ End Function
 
 
 ** Fin del proceso de exportación. **
-Lib_ExportToTxt [ExportToTxt.xls] v2.11.1
+ExportToTxt [ExportToTxt.xls] v3.0.0
