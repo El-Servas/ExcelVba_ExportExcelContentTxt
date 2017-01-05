@@ -5,7 +5,7 @@ Resumen
  * Hojas: 1
  * Nombres Definidos: 0
  * Módulos de Visual Basic: 5
- * Líneas de código VB: 778
+ * Líneas de código VB: 791
 
 Detalle
 =======
@@ -43,7 +43,7 @@ End Sub
 ///--- BEGINNING OF MODULE ---
 \\\--- END OF MODULE ---
 
-[Main] 24 líneas de código.
+[Main] 37 líneas de código.
 ///--- BEGINNING OF MODULE ---
 '=======================================================================================
 ' Exporta una representación textual del contenido de un libro de Excel.
@@ -68,6 +68,19 @@ End Sub
 Public Sub Main(bookToExport As Workbook, Optional visual As Boolean = False)
     Dim Exporter As New ExportClass
     Exporter.Main bookToExport, visual
+End Sub
+
+'Para generar el archivo PRD con la bandera de Addin Activada.
+Public Sub GenAddIn()
+    Dim PrdName
+    PrdName = Left(ThisWorkbook.FullName, (InStrRev(ThisWorkbook.FullName, ".", -1, vbTextCompare) - 1)) 'Sin Extensión.
+    PrdName = PrdName & "-PRD"
+    
+    ThisWorkbook.IsAddin = True
+    Application.DisplayAlerts = False
+    ThisWorkbook.SaveAs PrdName, ThisWorkbook.FileFormat
+    Application.DisplayAlerts = True
+    ThisWorkbook.Close
 End Sub
 \\\--- END OF MODULE ---
 
