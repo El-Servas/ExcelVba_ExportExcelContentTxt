@@ -16,7 +16,7 @@ Hojas:
 Contenido:
 [Sheet1]
 [A1] \ExportToTxt\
-[C1] (VERSION) \v3.0.0-SNAPSHOT (Standalone)\
+[C1] (VERSION) \v3.0.0\
 
 Nombres:
  [VERSION] =Sheet1!$C$1
@@ -845,4 +845,4 @@ End Function
 
 
 ** Fin del proceso de exportación. **
-ExportToTxt [ExportToTxt.xls] v3.0.0-SNAPSHOT (Standalone)
+ExportToTxt [ExportToTxt.xls] v3.0.0
