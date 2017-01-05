@@ -1,2 +1,3 @@
-del "%appdata%\Microsoft\Excel\XLSTART\ExportToTxt.x*"
-copy "ExportToTxt.x*" "%appdata%\Microsoft\Excel\XLSTART"
+del "%appdata%\Microsoft\Excel\XLSTART\ExportToTxt*.*"
+
+copy "*-PRD.*" "%appdata%\Microsoft\Excel\XLSTART"
